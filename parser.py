@@ -49,6 +49,8 @@ def parse_message(message):
                 continue
 
             parsed_position = item["position"] or current_position
+            if item["position"]:
+                current_position = item["position"]
             position, position_source = resolve_position_for_object(
                 object_name, parsed_position, item["gender"]
             )
@@ -137,7 +139,7 @@ def parse_need_line(line, current_position):
     items = []
     lowered = remove_time_durations(line.lower())
 
-    for match in re.finditer(r"(\d+)\s*(ж|м)\b(?!\.)(?!\s*мест)", lowered):
+    for match in re.finditer(r"(\d+)\s*\(?\s*(ж|м)\s*\)?(?![а-яё.])", lowered):
         items.append(
             make_item(
                 quantity=match.group(1),
@@ -157,6 +159,10 @@ def parse_need_line(line, current_position):
 
     if items:
         return items
+
+    quantity_position_items = parse_quantity_position_items(line)
+    if quantity_position_items:
+        return quantity_position_items
 
     position_quantity_items = parse_position_quantity_items(line)
     if position_quantity_items:
@@ -259,6 +265,26 @@ def parse_position_quantity_items(line):
     return items
 
 
+def parse_quantity_position_items(line):
+    items = []
+    lowered = line.lower()
+    position_pattern = "|".join(re.escape(hint) for hint in POSITION_HINTS)
+    if not position_pattern:
+        return items
+
+    pattern = rf"\b(\d+)\s*({position_pattern})\b"
+    for match in re.finditer(pattern, lowered):
+        position_hint = match.group(2)
+        items.append(
+            make_item(
+                quantity=match.group(1),
+                gender=find_explicit_gender(line) or POSITION_GENDER_DEFAULTS.get(position_hint) or "мужчины",
+                position=POSITION_ALIASES[position_hint],
+            )
+        )
+    return items
+
+
 def find_position_after_quantity(text):
     lowered = text.lower().strip()
     for hint in POSITION_HINTS:
@@ -333,12 +359,19 @@ def find_explicit_gender(text):
         return "женщины"
     if re.search(r"\b(девочка|девочки|девочек|девушка|девушки|девушек|девчонки|девчонок)\b", lowered):
         return "женщины"
+    if re.search(r"(?<![а-яё])ж(?![а-яё])", lowered):
+        return "женщины"
+    if re.search(r"(?<![а-яё])м(?![а-яё])", lowered):
+        return "мужчины"
     return None
 
 
 def detect_operation(text):
     lowered = text.lower()
-    if re.search(r"\b(добавляем|добавить|добавьте|прибавить|прибавляем|плюс)\b", lowered):
+    if (
+        re.search(r"\b(добавляем|добавить|добавьте|прибавить|прибавляем|плюс)\b", lowered)
+        or re.search(r"\bдоп(?:олнительная|олнительную|олнительно)?\s+потребность\b", lowered)
+    ):
         return "прибавить"
     return "заменить"
 
