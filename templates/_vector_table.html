@@ -1,0 +1,45 @@
+﻿<section class="table-wrap" aria-label="Таблица для Вектора">
+    <table class="vector-table">
+        <thead>
+            <tr>
+                <th rowspan="2">Объект</th>
+                <th rowspan="2">Должность</th>
+                <th colspan="3">РФ / РБ</th>
+                <th colspan="3">СНГ</th>
+                <th rowspan="2">Всего</th>
+                <th rowspan="2">Действие</th>
+            </tr>
+            <tr>
+                <th>М</th>
+                <th>Ж</th>
+                <th>Семьи</th>
+                <th>М</th>
+                <th>Ж</th>
+                <th>Семьи</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in vector_rows %}
+            <tr data-editable-row>
+                <td>{{ row.object }}</td>
+                <td>
+                    <span data-display>{{ row.position }}</span>
+                    <input class="edit-input position-input" data-field="position" value="{{ row.position }}" hidden>
+                </td>
+                <td><span data-display>{{ row.rf_rb_m }}</span><input class="edit-input number-input" data-number value="{{ row.rf_rb_m }}" hidden></td>
+                <td><span data-display>{{ row.rf_rb_f }}</span><input class="edit-input number-input" data-number value="{{ row.rf_rb_f }}" hidden></td>
+                <td><span data-display>{{ row.rf_rb_family }}</span><input class="edit-input number-input" data-number value="{{ row.rf_rb_family }}" hidden></td>
+                <td><span data-display>{{ row.cis_m }}</span><input class="edit-input number-input" data-number value="{{ row.cis_m }}" hidden></td>
+                <td><span data-display>{{ row.cis_f }}</span><input class="edit-input number-input" data-number value="{{ row.cis_f }}" hidden></td>
+                <td><span data-display>{{ row.cis_family }}</span><input class="edit-input number-input" data-number value="{{ row.cis_family }}" hidden></td>
+                <td data-total>{{ row.total }}</td>
+                <td>
+                    <button class="small-button" type="button" data-action="edit">Исправить</button>
+                    <button class="small-button save-button" type="button" data-action="save" hidden>Сохранить</button>
+                    <button class="small-button muted-button" type="button" data-action="cancel" hidden>Отмена</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>

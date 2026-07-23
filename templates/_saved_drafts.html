@@ -1,0 +1,95 @@
+﻿<section class="saved-drafts" aria-label="Сохранённые черновики">
+    {% if saved_drafts %}
+        {% set ns = namespace(last_status='') %}
+        {% for draft in saved_drafts %}
+        {% if draft.status|default('черновик') != ns.last_status %}
+            {% set ns.last_status = draft.status|default('черновик') %}
+            <h3 class="saved-status-title">{{ ns.last_status }}</h3>
+        {% endif %}
+        <details class="saved-draft status-{{ draft.status|default('черновик')|replace(' ', '-') }}" data-saved-draft data-draft-index="{{ draft.original_index }}" data-draft-key="{{ draft.message_key|default('') }}">
+            <summary>
+                <span>{{ draft.saved_at }}</span>
+                <strong>{{ draft.rows|length }} строк</strong>
+                <em data-draft-status>{{ draft.status|default('черновик') }}</em>
+            </summary>
+            <div class="saved-meta">
+                <span>{{ draft.source }}</span>
+                <span class="saved-actions">
+                    {% if draft.status not in ['подтверждён', 'отклонён'] %}
+                    <button class="small-button confirm-button" type="button" data-action="confirm-draft">Подтвердить</button>
+                    <button class="small-button reject-button" type="button" data-action="reject-draft">Отклонить</button>
+                    {% elif draft.status == 'подтверждён' %}
+                    <span class="confirmed-note">Подтверждён {{ draft.confirmed_at }}</span>
+                    <button class="small-button vector-preview-button" type="button" data-action="vector-preview-draft">Проверить публикацию в Вектор</button>
+                    <button class="small-button vector-publish-button" type="button" data-action="publish-draft-to-vector" hidden>Опубликовать в Вектор</button>
+                    {% elif draft.status == 'опубликовано' %}
+                    <span class="published-note">Опубликовано {{ draft.published_at }}</span>
+                    {% elif draft.status == 'отклонён' %}
+                    <span class="rejected-note">Отклонён {{ draft.rejected_at }}</span>
+                    {% endif %}
+                    <button class="small-button delete-button" type="button" data-action="delete-draft">Удалить черновик</button>
+                </span>
+            </div>
+            <pre class="vector-preview" data-vector-preview hidden></pre>
+            <div class="table-wrap saved-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Объект</th>
+                            <th rowspan="2">Должность</th>
+                            <th colspan="3">РФ / РБ</th>
+                            <th colspan="3">СНГ</th>
+                            <th rowspan="2">Всего</th>
+                            <th rowspan="2">Действие</th>
+                        </tr>
+                        <tr>
+                            <th>М</th>
+                            <th>Ж</th>
+                            <th>Семьи</th>
+                            <th>М</th>
+                            <th>Ж</th>
+                            <th>Семьи</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in draft.rows %}
+                        <tr data-saved-row data-row-index="{{ loop.index0 }}">
+                            <td data-saved-object>{{ row.object }}</td>
+                            <td>
+                                <span data-display>{{ row.position }}</span>
+                                {% set positions = object_positions.get(row.object, []) %}
+                                <select class="edit-input saved-position-input" data-field="position" hidden>
+                                    {% if row.position not in positions %}
+                                    <option value="{{ row.position }}">{{ row.position }}</option>
+                                    {% endif %}
+                                    {% for position in positions %}
+                                    <option value="{{ position }}" {% if position == row.position %}selected{% endif %}>{{ position }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td><span data-display>{{ row.rf_rb_m }}</span><input class="edit-input number-input" data-number value="{{ row.rf_rb_m }}" hidden></td>
+                            <td><span data-display>{{ row.rf_rb_f }}</span><input class="edit-input number-input" data-number value="{{ row.rf_rb_f }}" hidden></td>
+                            <td><span data-display>{{ row.rf_rb_family }}</span><input class="edit-input number-input" data-number value="{{ row.rf_rb_family }}" hidden></td>
+                            <td><span data-display>{{ row.cis_m }}</span><input class="edit-input number-input" data-number value="{{ row.cis_m }}" hidden></td>
+                            <td><span data-display>{{ row.cis_f }}</span><input class="edit-input number-input" data-number value="{{ row.cis_f }}" hidden></td>
+                            <td><span data-display>{{ row.cis_family }}</span><input class="edit-input number-input" data-number value="{{ row.cis_family }}" hidden></td>
+                            <td data-total>{{ row.total }}</td>
+                            <td>
+                                {% if draft.status not in ['подтверждён', 'отклонён'] %}
+                                <button class="small-button" type="button" data-action="edit-saved-row">Исправить</button>
+                                <button class="small-button save-button" type="button" data-action="save-saved-row" hidden>Сохранить</button>
+                                <button class="small-button muted-button" type="button" data-action="cancel-saved-row" hidden>Отмена</button>
+                                <button class="small-button delete-button" type="button" data-action="delete-saved-row">Удалить</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        {% endfor %}
+    {% else %}
+        <section class="empty">Сохранённых черновиков пока нет.</section>
+    {% endif %}
+</section>

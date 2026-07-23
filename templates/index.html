@@ -1,0 +1,73 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Parser2.0</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="page work-page">
+        <header class="topbar">
+            <div>
+                <h1>Parser2.0</h1>
+                <p>Черновики потребности из мессенджеров для проверки перед Вектором</p>
+            </div>
+            <span class="mode">Публикация с подтверждением</span>
+        </header>
+
+        <section class="workflow-summary" aria-label="Статус работы">
+            <div>
+                <strong>{{ saved_drafts|selectattr('status', 'equalto', 'требует проверки')|list|length }}</strong>
+                <span>требуют проверки</span>
+            </div>
+            <div>
+                <strong>{{ saved_drafts|selectattr('status', 'equalto', 'черновик')|list|length }}</strong>
+                <span>новые черновики</span>
+            </div>
+            <div>
+                <strong>{{ saved_drafts|selectattr('status', 'equalto', 'подтверждён')|list|length }}</strong>
+                <span>подтверждены</span>
+            </div>
+            <div>
+                <strong>{{ publication_count }}</strong>
+                <span>публикаций в Вектор</span>
+            </div>
+        </section>
+
+        <section class="section-head main-head">
+            <div>
+                <h2>Черновики из мессенджеров</h2>
+                <p>Проверь строки, исправь при необходимости, затем подтверди или отклони.</p>
+            </div>
+            {% set working_drafts_count = (
+                saved_drafts|selectattr('status', 'equalto', 'требует проверки')|list|length
+            ) + (
+                saved_drafts|selectattr('status', 'equalto', 'черновик')|list|length
+            ) %}
+            {% set confirmed_drafts_count = saved_drafts|selectattr('status', 'equalto', 'подтверждён')|list|length %}
+            <div class="main-actions">
+                {% if confirmed_drafts_count > 0 %}
+                <button class="vector-preview-button" type="button" data-action="vector-preview-confirmed">
+                    Проверить готовые ({{ confirmed_drafts_count }})
+                </button>
+                <button class="vector-publish-button" type="button" data-action="publish-confirmed-to-vector" hidden>
+                    Опубликовать готовые в Вектор
+                </button>
+                {% endif %}
+                {% if working_drafts_count > 0 %}
+                <button class="delete-button clear-working-drafts-button" type="button" data-action="delete-working-drafts">
+                    Удалить черновики и требует проверки
+                </button>
+                {% endif %}
+            </div>
+        </section>
+
+        <pre class="vector-preview bulk-vector-preview" data-bulk-vector-preview hidden></pre>
+
+        {% include "_saved_drafts.html" %}
+        {% include "_publication_history.html" %}
+    </main>
+    <script src="{{ url_for('static', filename='edit.js') }}?v=10"></script>
+</body>
+</html>

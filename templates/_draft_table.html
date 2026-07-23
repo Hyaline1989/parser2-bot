@@ -1,0 +1,46 @@
+{% set rows = table_drafts if table_drafts is defined else review_drafts %}
+<section class="table-wrap" aria-label="Черновик потребности">
+    <table>
+        <thead>
+            <tr>
+                <th>Объект</th>
+                <th>Должность</th>
+                <th>Источник должности</th>
+                <th>Кол-во</th>
+                <th>Пол</th>
+                <th>Тип</th>
+                <th>Гражданство</th>
+                <th>Статус</th>
+                <th>Сообщение</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for draft in rows %}
+            <tr>
+                <td>{{ draft.object }}</td>
+                <td>{{ draft.position }}</td>
+                <td>{{ draft.position_source }}</td>
+                <td>{{ draft.quantity }}</td>
+                <td>{{ draft.gender }}</td>
+                <td>{{ draft.need_type }}</td>
+                <td>{{ draft.citizenship }}</td>
+                <td>
+                    <span class="status {% if draft.status == 'требует проверки' %}warning{% else %}ready{% endif %}">
+                        {{ draft.status }}
+                    </span>
+                    {% if draft.unclear %}
+                    <small>Неясно: {{ draft.unclear }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="source">{{ draft.source }}</span>
+                    <details class="message-details">
+                        <summary>Показать текст</summary>
+                        <p>{{ draft.text }}</p>
+                    </details>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>

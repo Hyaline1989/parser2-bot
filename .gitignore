@@ -1,0 +1,36 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Secrets and local environment
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.cer
+
+# Live Parser data
+drafts.json
+max_marker.txt
+telegram_marker.txt
+data/
+instance/
+logs/
+*.log
+*.pid
+
+# Databases and generated packages
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.zip
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

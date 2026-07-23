@@ -1,0 +1,37 @@
+<section class="publication-history" aria-label="История публикаций">
+    <div class="section-head">
+        <div>
+            <h2>История публикаций</h2>
+            <p>Здесь видно, что и когда было записано в Вектор.</p>
+        </div>
+    </div>
+
+    {% if publication_history %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Объекты</th>
+                    <th>Черновики</th>
+                    <th>Изменения</th>
+                    <th>Защита</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in publication_history %}
+                <tr>
+                    <td>{{ entry.published_at }}</td>
+                    <td>{{ entry.objects|join(', ') }}</td>
+                    <td>{{ entry.draft_count }}</td>
+                    <td>{{ entry.changes|length }}</td>
+                    <td>{% if entry.backup_path %}Копия создана{% else %}Нет данных{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <section class="empty">Публикаций пока не было.</section>
+    {% endif %}
+</section>

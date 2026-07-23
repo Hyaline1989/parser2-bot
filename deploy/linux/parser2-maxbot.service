@@ -1,0 +1,14 @@
+[Unit]
+Description=Parser2.0 MAX bot listener
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/parser2
+EnvironmentFile=/etc/parser2/parser2.env
+ExecStart=/opt/parser2/.venv/bin/python /opt/parser2/max_bot.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
