@@ -211,6 +211,10 @@ def parse_need_line(line, current_position):
         r"\b(\d+)\s*(?:человек|чел)\b",
         lowered,
     )
+    if quantity_match:
+        quantity_tail = lowered[quantity_match.end() :]
+        if re.match(r"\s*(?:суточно|в\s+сутки|ежедневно|за\s+смену)\b", quantity_tail):
+            quantity_match = None
     quantity_context = lowered[max(0, quantity_match.start() - 60) : quantity_match.start()] if quantity_match else ""
     is_output_context = bool(re.search(r"\bвыход\w*(?:\s+в)?\s*$", quantity_context))
     has_direct_need = bool(re.search(r"\b(потребност\w*|заявк\w*|нужны|требуются)\b", lowered))

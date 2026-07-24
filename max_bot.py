@@ -298,6 +298,26 @@ def looks_like_age_limit_only(text):
     )
 
 
+def looks_like_transfer_discussion(text):
+    lowered = text.lower()
+    rate_markers = [
+        "\u0447\u0435\u043b\u043e\u0432\u0435\u043a \u0441\u0443\u0442\u043e\u0447\u043d\u043e",
+        "\u0447\u0435\u043b\u043e\u0432\u0435\u043a \u0432 \u0441\u0443\u0442\u043a\u0438",
+        "\u0447\u0435\u043b\u043e\u0432\u0435\u043a \u0435\u0436\u0435\u0434\u043d\u0435\u0432\u043d\u043e",
+    ]
+    transfer_markers = [
+        "\u0432 \u0441\u043b\u0443\u0447\u0430\u0435 \u0441\u043e\u043a\u0440\u0430\u0449\u0435\u043d\u0438\u044f \u0437\u0430\u044f\u0432\u043a\u0438",
+        "\u043f\u0440\u0438 \u0441\u043e\u043a\u0440\u0430\u0449\u0435\u043d\u0438\u0438 \u0437\u0430\u044f\u0432\u043a\u0438",
+        "\u043f\u0435\u0440\u0435\u0432\u0435\u0434\u0443 \u043d\u0430",
+        "\u043f\u0435\u0440\u0435\u0432\u0435\u0441\u0442\u0438 \u043d\u0430",
+        "\u043f\u0435\u0440\u0435\u043d\u0430\u043f\u0440\u0430\u0432\u043b\u044e \u043d\u0430",
+    ]
+    return (
+        any(marker in lowered for marker in rate_markers)
+        or sum(marker in lowered for marker in transfer_markers) >= 2
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -311,6 +331,7 @@ def looks_like_need(text):
         or looks_like_need_explanation(text)
         or looks_like_place_availability(text)
         or looks_like_age_limit_only(text)
+        or looks_like_transfer_discussion(text)
     ):
         return False
 
