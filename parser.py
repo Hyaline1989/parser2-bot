@@ -137,6 +137,7 @@ def remove_redundant_aggregate_totals(drafts):
 
 def parse_need_line(line, current_position):
     items = []
+    line = remove_age_limits(line)
     lowered = remove_time_durations(line.lower())
 
     for match in re.finditer(r"(\d+)\s*\(?\s*(ж|м)\s*\)?(?![а-яё.])", lowered):
@@ -241,6 +242,15 @@ def parse_need_line(line, current_position):
 def remove_time_durations(text):
     text = re.sub(r"\b\d+\s*ч\.?\s*\d+\s*м\.?", " ", text)
     return re.sub(r"\b\d+\s*м\.", " ", text)
+
+
+def remove_age_limits(text):
+    return re.sub(
+        r"\b(?:до|от)\s*\d{1,2}(?:\s*[-–—]\s*\d{1,2})?\s*(?:лет|года?|г\.)\b",
+        " ",
+        text,
+        flags=re.IGNORECASE,
+    )
 
 
 def parse_position_quantity_items(line):

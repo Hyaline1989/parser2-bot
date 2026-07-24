@@ -278,6 +278,26 @@ def looks_like_place_availability(text):
     )
 
 
+def looks_like_age_limit_only(text):
+    lowered = text.lower()
+    age_pattern = r"\b(?:до|от)\s*\d{1,2}(?:\s*[-–—]\s*\d{1,2})?\s*(?:лет|года?|г\.)\b"
+    if not re.search(age_pattern, lowered):
+        return False
+
+    without_age = re.sub(age_pattern, " ", lowered)
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    return (
+        not re.search(r"\d+", without_age)
+        and not any(marker in lowered for marker in direct_need_markers)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -290,6 +310,7 @@ def looks_like_need(text):
         or looks_like_operational_discussion(text)
         or looks_like_need_explanation(text)
         or looks_like_place_availability(text)
+        or looks_like_age_limit_only(text)
     ):
         return False
 
