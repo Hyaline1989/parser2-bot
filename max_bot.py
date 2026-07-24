@@ -254,6 +254,30 @@ def looks_like_need_explanation(text):
     )
 
 
+def looks_like_place_availability(text):
+    lowered = text.lower()
+    availability_markers = [
+        "\u043e\u0441\u0442\u0430\u043b\u043e\u0441\u044c",
+        "\u043e\u0441\u0442\u0430\u043b\u043e\u0441\u044c \u043c\u0435\u0441\u0442",
+        "\u0441\u0432\u043e\u0431\u043e\u0434\u043d\u044b\u0445",
+        "\u0441\u0432\u043e\u0431\u043e\u0434\u043d\u044b\u0435 \u043c\u0435\u0441\u0442\u0430",
+        "\u0441\u0432\u043e\u0431\u043e\u0434\u043d\u043e \u043c\u0435\u0441\u0442",
+    ]
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    mentions_places = bool(re.search(r"\b\u043c\u0435\u0441\u0442\w*\b", lowered))
+    return (
+        mentions_places
+        and any(marker in lowered for marker in availability_markers)
+        and not any(marker in lowered for marker in direct_need_markers)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -265,6 +289,7 @@ def looks_like_need(text):
         or looks_like_discussion_question(text)
         or looks_like_operational_discussion(text)
         or looks_like_need_explanation(text)
+        or looks_like_place_availability(text)
     ):
         return False
 
