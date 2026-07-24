@@ -363,13 +363,17 @@ def find_object_in_text(text):
 
 
 def resolve_object_name(chat_id, chat_title, text):
+    chat_objects = load_chat_objects()
+    chat_id_key = str(chat_id) if chat_id is not None else ""
+    object_from_chat = chat_objects.get(chat_id_key) or chat_objects.get(chat_title)
+    if object_from_chat:
+        return object_from_chat
+
     object_from_text = find_object_in_text(text)
     if object_from_text:
         return object_from_text
 
-    chat_objects = load_chat_objects()
-    chat_id_key = str(chat_id) if chat_id is not None else ""
-    return chat_objects.get(chat_id_key) or chat_objects.get(chat_title) or chat_title or "объект из MAX-чата"
+    return chat_title or "объект из MAX-чата"
 
 
 def rows_from_review_drafts(drafts):
