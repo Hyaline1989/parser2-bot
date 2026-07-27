@@ -36,6 +36,40 @@ class VectorIntegrationTests(unittest.TestCase):
             )
             """
         )
+        conn.executescript(
+            """
+            CREATE TABLE vacancy_objects (
+                id INTEGER PRIMARY KEY,
+                name TEXT UNIQUE NOT NULL
+            );
+            CREATE TABLE vacancy_positions (
+                id INTEGER PRIMARY KEY,
+                object_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                UNIQUE(object_id, name)
+            );
+            CREATE TABLE vacancy_requirements (
+                id INTEGER PRIMARY KEY,
+                position_id INTEGER NOT NULL,
+                date TEXT NOT NULL,
+                rf_men INTEGER DEFAULT 0,
+                rf_women INTEGER DEFAULT 0,
+                rf_family INTEGER DEFAULT 0,
+                cis_men INTEGER DEFAULT 0,
+                cis_women INTEGER DEFAULT 0,
+                cis_family INTEGER DEFAULT 0,
+                is_high INTEGER DEFAULT 0,
+                updated_at TEXT,
+                UNIQUE(position_id, date)
+            );
+            INSERT INTO vacancy_objects (id, name)
+            VALUES (1, 'РўРµСЃС‚РѕРІС‹Р№ РѕР±СЉРµРєС‚');
+            INSERT INTO vacancy_positions (id, object_id, name)
+            VALUES
+                (10, 1, 'Р”РѕР»Р¶РЅРѕСЃС‚СЊ Рђ'),
+                (11, 1, 'РќРѕРІР°СЏ РґРѕР»Р¶РЅРѕСЃС‚СЊ');
+            """
+        )
         conn.executemany(
             """
             INSERT INTO current_requirements (
@@ -47,6 +81,30 @@ class VectorIntegrationTests(unittest.TestCase):
                 ("Тестовый объект", "Должность А", 5, 1),
                 ("Тестовый объект", "Новая должность", 7, 0),
             ],
+        )
+        object_name, first_position = conn.execute(
+            """
+            SELECT object_name, position_name
+            FROM current_requirements
+            ORDER BY rowid
+            LIMIT 1
+            """
+        ).fetchone()
+        second_position = conn.execute(
+            """
+            SELECT position_name
+            FROM current_requirements
+            ORDER BY rowid
+            LIMIT 1 OFFSET 1
+            """
+        ).fetchone()[0]
+        conn.execute(
+            "INSERT INTO vacancy_objects (id, name) VALUES (?, ?)",
+            (2, object_name),
+        )
+        conn.executemany(
+            "INSERT INTO vacancy_positions (id, object_id, name) VALUES (?, 2, ?)",
+            [(20, first_position), (21, second_position)],
         )
         conn.commit()
         conn.close()
@@ -133,6 +191,37 @@ class VectorIntegrationTests(unittest.TestCase):
         }
         self.assertEqual(changes["РФ/РБ М"], 11)
         self.assertEqual(changes["РФ/РБ Ж"], 10)
+
+
+    def test_publish_synchronizes_current_and_daily_tables(self):
+        source_row = self.row(9)
+        publish_vector_rows([source_row], self.db_path)
+
+        conn = sqlite3.connect(self.db_path)
+        try:
+            current = conn.execute(
+                """
+                SELECT rf_men
+                FROM current_requirements
+                WHERE object_name = ? AND position_name = ?
+                """,
+                (source_row["object"], source_row["position"]),
+            ).fetchone()[0]
+            daily = conn.execute(
+                """
+                SELECT vr.rf_men
+                FROM vacancy_requirements vr
+                JOIN vacancy_positions vp ON vp.id = vr.position_id
+                JOIN vacancy_objects vo ON vo.id = vp.object_id
+                WHERE vo.name = ? AND vp.name = ?
+                """,
+                (source_row["object"], source_row["position"]),
+            ).fetchone()[0]
+        finally:
+            conn.close()
+
+        self.assertEqual(current, 9)
+        self.assertEqual(daily, 9)
 
 
 if __name__ == "__main__":

@@ -231,6 +231,8 @@ def publish_vector_batches(row_batches, db_path=None):
     conn = sqlite3.connect(Path(resolved_db_path))
     try:
         cursor = conn.cursor()
+        cursor.execute("BEGIN IMMEDIATE")
+        today = datetime.now().strftime("%Y-%m-%d")
         for (object_name, position_name), values in target_values.items():
             cursor.execute(
                 """
@@ -253,6 +255,62 @@ def publish_vector_batches(row_batches, db_path=None):
             )
             if cursor.rowcount != 1:
                 raise VectorIntegrationError(f"{object_name} / {position_name}: строка не обновлена в Векторе")
+
+            cursor.execute(
+                """
+                SELECT vp.id
+                FROM vacancy_positions vp
+                JOIN vacancy_objects vo ON vo.id = vp.object_id
+                WHERE vo.name = ? AND vp.name = ?
+                """,
+                (object_name, position_name),
+            )
+            position_row = cursor.fetchone()
+            if not position_row:
+                raise VectorIntegrationError(
+                    f"{object_name} / {position_name}: должность не найдена в дневном плане Вектора"
+                )
+
+            position_id = position_row[0]
+            cursor.execute(
+                """
+                SELECT rf_men, rf_women, rf_family,
+                       cis_men, cis_women, cis_family
+                FROM vacancy_requirements
+                WHERE position_id = ? AND date = ?
+                """,
+                (position_id, today),
+            )
+            existing = cursor.fetchone()
+            ordered_values = (
+                values["rf_men"], values["rf_women"], values["rf_family"],
+                values["cis_men"], values["cis_women"], values["cis_family"],
+            )
+            if existing:
+                daily_maximums = tuple(
+                    max(safe_int(old_value), new_value)
+                    for old_value, new_value in zip(existing, ordered_values)
+                )
+                cursor.execute(
+                    """
+                    UPDATE vacancy_requirements
+                    SET rf_men = ?, rf_women = ?, rf_family = ?,
+                        cis_men = ?, cis_women = ?, cis_family = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE position_id = ? AND date = ?
+                    """,
+                    (*daily_maximums, position_id, today),
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO vacancy_requirements
+                        (position_id, date, rf_men, rf_women, rf_family,
+                         cis_men, cis_women, cis_family, is_high)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+                    """,
+                    (position_id, today, *ordered_values),
+                )
 
         conn.commit()
     except Exception:
