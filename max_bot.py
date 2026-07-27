@@ -153,6 +153,7 @@ def looks_like_candidate_travel(text):
         "\u043a\u0443\u043f\u0438\u043b \u0431\u0438\u043b\u0435\u0442",
         "\u043a\u0443\u043f\u0438\u043b\u0430 \u0431\u0438\u043b\u0435\u0442",
         "\u0431\u0438\u043b\u0435\u0442 \u043d\u0430",
+        "\u043d\u0430 \u0434\u043e\u0435\u0437\u0434\u0435",
     ]
     need_markers = [
         "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
@@ -347,6 +348,45 @@ def looks_like_arrival_coordination(text):
     )
 
 
+def looks_like_training_schedule(text):
+    """Отличает расписание инструктажа/обучения от заявки на персонал."""
+    lowered = text.lower()
+    training_markers = [
+        "\u043e\u0431\u0443\u0447\u0435\u043d\u0438",
+        "\u0438\u043d\u0441\u0442\u0440\u0443\u043a\u0442\u0430\u0436",
+    ]
+    schedule_markers = [
+        "\u0441\u0440\u043e\u043a\u0430\u0445 \u0432\u044b\u0432\u043e\u0434\u0430",
+        "\u0441\u043f\u0438\u0441\u043a\u0438 \u043d\u0430 \u043e\u0431\u0443\u0447\u0435\u043d\u0438\u0435",
+        "\u043f\u043e\u043f\u0430\u0434\u0443\u0442 \u043d\u0430 \u043e\u0431\u0443\u0447\u0435\u043d\u0438\u0435",
+        "\u043f\u0440\u0438\u0435\u0437\u0436\u0430",
+        "\u043f\u043e\u0434\u0430\u044e\u0442\u0441\u044f \u0434\u043e",
+    ]
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    has_calendar = bool(
+        re.search(
+            r"\b(?:\u043f\u043d|\u0432\u0442|\u0441\u0440|\u0447\u0442|\u043f\u0442|\u0441\u0431|\u0432\u0441)"
+            r"(?:\s*[-\u2013\u2014]\s*(?:\u043f\u043d|\u0432\u0442|\u0441\u0440|\u0447\u0442|\u043f\u0442|\u0441\u0431|\u0432\u0441))*\b"
+            r"|\b\d{1,2}:\d{2}\b",
+            lowered,
+        )
+    )
+    return (
+        any(marker in lowered for marker in training_markers)
+        and (
+            has_calendar
+            or sum(marker in lowered for marker in schedule_markers) >= 2
+        )
+        and not any(marker in lowered for marker in direct_need_markers)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -362,6 +402,7 @@ def looks_like_need(text):
         or looks_like_age_limit_only(text)
         or looks_like_transfer_discussion(text)
         or looks_like_arrival_coordination(text)
+        or looks_like_training_schedule(text)
     ):
         return False
 
