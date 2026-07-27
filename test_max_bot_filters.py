@@ -1,6 +1,10 @@
 import unittest
 
-from max_bot import looks_like_need, looks_like_training_schedule
+from max_bot import (
+    looks_like_candidate_medical_issue,
+    looks_like_need,
+    looks_like_training_schedule,
+)
 
 
 TRAINING_SCHEDULE_MESSAGE = (
@@ -16,6 +20,12 @@ TRAVEL_STATUS_MESSAGE = (
     "с 28.07 9 человек на доезде"
 )
 
+MEDICAL_ISSUE_MESSAGE = (
+    "Коллеги, добрый день! Просьба, проговаривать про критические дни у женщин. "
+    "Медкомиссию нельзя пройти в этот период. 3 ж заехали вчера и у всех трех "
+    "еще неделю они будут идти. Я не могу их всю неделю держать в хостеле."
+)
+
 
 class MaxBotFilterTests(unittest.TestCase):
     def test_training_schedule_is_not_a_requirement(self):
@@ -29,6 +39,15 @@ class MaxBotFilterTests(unittest.TestCase):
 
     def test_people_already_in_transit_are_not_a_requirement(self):
         self.assertFalse(looks_like_need(TRAVEL_STATUS_MESSAGE))
+
+    def test_medical_issue_of_arrived_candidates_is_not_a_requirement(self):
+        self.assertTrue(looks_like_candidate_medical_issue(MEDICAL_ISSUE_MESSAGE))
+        self.assertFalse(looks_like_need(MEDICAL_ISSUE_MESSAGE))
+
+    def test_real_requirement_with_medical_note_is_not_hidden(self):
+        message = "Нужны 3 женщины, медкомиссия обязательна"
+        self.assertFalse(looks_like_candidate_medical_issue(message))
+        self.assertTrue(looks_like_need(message))
 
 
 if __name__ == "__main__":

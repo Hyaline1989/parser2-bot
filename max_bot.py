@@ -387,6 +387,36 @@ def looks_like_training_schedule(text):
     )
 
 
+def looks_like_candidate_medical_issue(text):
+    """Отсекает обсуждение медкомиссии уже приехавших кандидатов."""
+    lowered = text.lower()
+    medical_markers = [
+        "\u043c\u0435\u0434\u043a\u043e\u043c\u0438\u0441\u0441",
+        "\u043a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0434\u043d\u0438",
+    ]
+    existing_candidate_markers = [
+        "\u0437\u0430\u0435\u0445\u0430\u043b\u0438",
+        "\u0437\u0430\u0435\u0445\u0430\u043b",
+        "\u0432 \u0445\u043e\u0441\u0442\u0435\u043b\u0435",
+        "\u0434\u0435\u0440\u0436\u0430\u0442\u044c \u0432 \u0445\u043e\u0441\u0442\u0435\u043b\u0435",
+        "\u043d\u0435\u043b\u044c\u0437\u044f \u043f\u0440\u043e\u0439\u0442\u0438",
+        "\u0435\u0449\u0435 \u043d\u0435\u0434\u0435\u043b\u044e",
+        "\u0435\u0449\u0451 \u043d\u0435\u0434\u0435\u043b\u044e",
+    ]
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    return (
+        any(marker in lowered for marker in medical_markers)
+        and sum(marker in lowered for marker in existing_candidate_markers) >= 2
+        and not any(marker in lowered for marker in direct_need_markers)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -403,6 +433,7 @@ def looks_like_need(text):
         or looks_like_transfer_discussion(text)
         or looks_like_arrival_coordination(text)
         or looks_like_training_schedule(text)
+        or looks_like_candidate_medical_issue(text)
     ):
         return False
 
