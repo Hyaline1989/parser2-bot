@@ -103,6 +103,9 @@ def calculate_vector_batches(row_batches, db_path=None):
             if object_name not in requirements:
                 errors.append(f"{object_name}: объект не найден в Векторе")
                 continue
+            if operation == "обнулить":
+                valid_rows.append((row, object_name, position_name, operation))
+                continue
             if position_name not in requirements[object_name]["positions"]:
                 errors.append(f"{object_name} / {position_name}: должность не найдена в Векторе")
                 continue
@@ -135,14 +138,21 @@ def calculate_vector_batches(row_batches, db_path=None):
             for _row, object_name, _position, operation in valid_rows
             if operation != "прибавить"
         }
+        reset_operations = {
+            object_name: operation
+            for _row, object_name, _position, operation in valid_rows
+            if operation != "прибавить"
+        }
         for object_name in reset_objects:
             for position_name in requirements[object_name]["positions"]:
                 key = (object_name, position_name)
                 for vector_field, _label in NUMBER_FIELDS.values():
                     target_values[key][vector_field] = 0
-                operation_by_position[key] = "заменить"
+                operation_by_position[key] = reset_operations[object_name]
 
         for row, object_name, position_name, operation in valid_rows:
+            if operation == "обнулить":
+                continue
             key = (object_name, position_name)
             for parser_field, (vector_field, _label) in NUMBER_FIELDS.items():
                 row_value = safe_int(row.get(parser_field))

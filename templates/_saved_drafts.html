@@ -56,7 +56,10 @@
                         <tr data-saved-row data-row-index="{{ loop.index0 }}">
                             <td data-saved-object>{{ row.object }}</td>
                             <td>
-                                <span data-display>{{ row.position }}</span>
+                                <span data-display>
+                                    {{ row.position }}
+                                    {% if row.operation == 'обнулить' %}<strong>— обнуление объекта</strong>{% endif %}
+                                </span>
                                 {% set positions = object_positions.get(row.object, []) %}
                                 <select class="edit-input saved-position-input" data-field="position" hidden>
                                     {% if row.position not in positions %}
@@ -76,9 +79,11 @@
                             <td data-total>{{ row.total }}</td>
                             <td>
                                 {% if draft.status not in ['подтверждён', 'отклонён'] %}
+                                {% if row.operation != 'обнулить' %}
                                 <button class="small-button" type="button" data-action="edit-saved-row">Исправить</button>
                                 <button class="small-button save-button" type="button" data-action="save-saved-row" hidden>Сохранить</button>
                                 <button class="small-button muted-button" type="button" data-action="cancel-saved-row" hidden>Отмена</button>
+                                {% endif %}
                                 <button class="small-button delete-button" type="button" data-action="delete-saved-row">Удалить</button>
                                 {% endif %}
                             </td>

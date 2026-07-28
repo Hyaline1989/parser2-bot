@@ -438,6 +438,7 @@ def clean_vector_row(row):
     cleaned = {
         "object": str(row.get("object", "")).strip(),
         "position": str(row.get("position", "")).strip() or "требует выбора",
+        "operation": str(row.get("operation") or "заменить").strip(),
     }
     for field in number_fields:
         cleaned[field] = max(0, int(row.get(field) or 0))

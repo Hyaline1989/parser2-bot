@@ -223,6 +223,30 @@ class VectorIntegrationTests(unittest.TestCase):
         self.assertEqual(current, 9)
         self.assertEqual(daily, 9)
 
+    def test_clear_object_does_not_require_a_position(self):
+        clear_row = {
+            "object": self.row(1)["object"],
+            "position": "Все должности",
+            "rf_rb_m": 0,
+            "rf_rb_f": 0,
+            "rf_rb_family": 0,
+            "cis_m": 0,
+            "cis_f": 0,
+            "cis_family": 0,
+            "total": 0,
+            "operation": "обнулить",
+        }
+
+        preview = build_vector_preview([clear_row], self.db_path)
+        self.assertFalse(preview["errors"])
+        self.assertTrue(preview["changes"])
+        self.assertTrue(
+            all(change["operation"] == "обнулить" for change in preview["changes"])
+        )
+
+        publish_vector_rows([clear_row], self.db_path)
+        self.assertTrue(all(value == 0 for value in self.read_men().values()))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -10,6 +10,19 @@ DEFAULT_OBJECT = "объект из Telegram-чата"
 POSITION_ALIASES = get_position_aliases()
 POSITION_HINTS = sorted(POSITION_ALIASES, key=len, reverse=True)
 POSITION_GENDER_DEFAULTS = get_position_gender_defaults()
+ALL_POSITIONS = "Все должности"
+
+
+def is_zero_requirement(text):
+    """Распознаёт только явную команду обнулить потребность объекта."""
+    lowered = clean_text(text).lower()
+    patterns = [
+        r"\bпотребност\w*\s*(?:[:=\-–—]\s*)?0\b",
+        r"\bпотребност(?:ь|и)\s+(?:больше\s+)?нет\b",
+        r"\bобнул(?:ить|ите|яем|яется)\s+потребност\w*\b",
+        r"\bзакрыть\s+потребност\w*\b",
+    ]
+    return any(re.search(pattern, lowered) for pattern in patterns)
 
 
 def parse_messages(messages):
@@ -25,6 +38,25 @@ def parse_message(message):
     source = message.get("source", "Тестовый чат")
     object_name = message.get("object") or DEFAULT_OBJECT
     operation = detect_operation(text)
+
+    if is_zero_requirement(text):
+        return [
+            {
+                "source": source,
+                "text": text,
+                "object": object_name,
+                "position": ALL_POSITIONS,
+                "position_source": "явное обнуление",
+                "quantity": 0,
+                "gender": "все",
+                "need_type": "обнуление",
+                "citizenship": "все",
+                "operation": "обнулить",
+                "status": "готово к проверке",
+                "unclear": "",
+            }
+        ]
+
     drafts = []
     current_position = find_default_position_in_message(object_name, text)
     current_citizenship = "РФ/РБ"
