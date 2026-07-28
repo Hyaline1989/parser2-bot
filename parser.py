@@ -59,6 +59,7 @@ def parse_message(message):
 
     drafts = []
     current_position = find_default_position_in_message(object_name, text)
+    family_fallback_position = None
     current_citizenship = "РФ/РБ"
 
     for raw_line in text_for_parsing.splitlines():
@@ -76,9 +77,19 @@ def parse_message(message):
             current_position = heading_position
             continue
 
+        line_position = find_position(line)
         for item in parse_need_line(line, current_position):
             if item["quantity"] == 0:
                 continue
+
+            if item["gender"] == "мужчины" and line_position:
+                family_fallback_position = line_position
+            if (
+                item["need_type"] == "семейная"
+                and not line_position
+                and family_fallback_position
+            ):
+                item["position"] = family_fallback_position
 
             parsed_position = item["position"] or current_position
             if item["position"]:
@@ -171,13 +182,14 @@ def parse_need_line(line, current_position):
     items = []
     line = remove_age_limits(line)
     lowered = remove_time_durations(line.lower())
+    line_position = find_position(line)
 
     for match in re.finditer(r"(\d+)\s*\(?\s*(ж|м)\s*\)?(?![а-яё.])", lowered):
         items.append(
             make_item(
                 quantity=match.group(1),
                 gender=gender_from_short(match.group(2)),
-                position=current_position or find_position(line),
+                position=line_position or current_position,
             )
         )
 
@@ -186,7 +198,7 @@ def parse_need_line(line, current_position):
             make_item(
                 quantity=match.group(2),
                 gender=gender_from_short(match.group(1)),
-                position=current_position or find_position(line),
+                position=line_position or current_position,
             )
         )
 
@@ -212,7 +224,7 @@ def parse_need_line(line, current_position):
             tail_start = gender_match.end() + quantity_match.end()
             tail = line[tail_start:]
             gender, need_type = gender_and_type(gender_match.group(1))
-            position = current_position or find_position_after_quantity(tail) or find_position(line)
+            position = find_position_after_quantity(tail) or line_position or current_position
             return [
                 make_item(
                     quantity=quantity,
@@ -222,7 +234,7 @@ def parse_need_line(line, current_position):
                 )
             ]
 
-    position = current_position or find_position(line)
+    position = line_position or current_position
     quantity_match = re.search(r"[:\-]\s*(\d+)\b", lowered)
     if position and quantity_match:
         return [
