@@ -3,6 +3,7 @@ import unittest
 from max_bot import (
     looks_like_candidate_medical_issue,
     looks_like_need,
+    looks_like_passport_correction,
     looks_like_training_schedule,
 )
 
@@ -29,6 +30,11 @@ MEDICAL_ISSUE_MESSAGE = (
 CANDIDATE_OFFER_MESSAGE = (
     "Возьмёте 3 ж (стик или комплектовщки) и 1 м (комплектовщик) = друзья, "
     "готовы приехать сегодня."
+)
+
+PASSPORT_CORRECTION_MESSAGE = (
+    "в паспорте грузчик 3 400 (300 р/ч). Исправьте пожалуйста на 3 300. "
+    "работают они по 11 часов"
 )
 
 
@@ -59,6 +65,15 @@ class MaxBotFilterTests(unittest.TestCase):
 
     def test_real_requirement_with_same_counts_is_not_hidden(self):
         message = "Нужны 3 женщины и 1 мужчина, комплектовщики"
+        self.assertTrue(looks_like_need(message))
+
+    def test_passport_rate_correction_is_not_a_requirement(self):
+        self.assertTrue(looks_like_passport_correction(PASSPORT_CORRECTION_MESSAGE))
+        self.assertFalse(looks_like_need(PASSPORT_CORRECTION_MESSAGE))
+
+    def test_real_requirement_with_passport_note_is_not_hidden(self):
+        message = "Нужны 3 грузчика, ставка указана в паспорте объекта"
+        self.assertFalse(looks_like_passport_correction(message))
         self.assertTrue(looks_like_need(message))
 
 

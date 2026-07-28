@@ -419,6 +419,37 @@ def looks_like_candidate_medical_issue(text):
     )
 
 
+def looks_like_passport_correction(text):
+    """Отсекает исправления ставки, графика и других данных паспорта объекта."""
+    lowered = text.lower()
+    passport_markers = [
+        "\u0432 \u043f\u0430\u0441\u043f\u043e\u0440\u0442\u0435",
+        "\u043f\u0430\u0441\u043f\u043e\u0440\u0442 \u043e\u0431\u044a\u0435\u043a\u0442\u0430",
+        "\u043f\u0430\u0441\u043f\u043e\u0440\u0442\u0435 \u043e\u0431\u044a\u0435\u043a\u0442\u0430",
+    ]
+    correction_markers = [
+        "\u0438\u0441\u043f\u0440\u0430\u0432\u044c\u0442\u0435",
+        "\u0438\u0437\u043c\u0435\u043d\u0438\u0442\u0435",
+        "\u043f\u043e\u043c\u0435\u043d\u044f\u0439\u0442\u0435",
+        "\u0441\u0442\u0430\u0432\u043a",
+        "\u0440/\u0447",
+        "\u0440\u0443\u0431/\u0447",
+        "\u0447\u0430\u0441\u043e\u0432",
+    ]
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    return (
+        any(marker in lowered for marker in passport_markers)
+        and any(marker in lowered for marker in correction_markers)
+        and not any(marker in lowered for marker in direct_need_markers)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -436,6 +467,7 @@ def looks_like_need(text):
         or looks_like_arrival_coordination(text)
         or looks_like_training_schedule(text)
         or looks_like_candidate_medical_issue(text)
+        or looks_like_passport_correction(text)
     ):
         return False
 
