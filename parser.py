@@ -184,6 +184,20 @@ def parse_need_line(line, current_position):
     lowered = remove_time_durations(line.lower())
     line_position = find_position(line)
 
+    for match in re.finditer(
+        r"(\d+)\s*\(?\s*(муж(?:чин(?:а|ы)?|ской|ские|ских)?|жен(?:щин(?:а|ы)?|ский|ские|ских)?)\s*\)?",
+        lowered,
+    ):
+        gender, need_type = gender_and_type(match.group(2))
+        items.append(
+            make_item(
+                quantity=match.group(1),
+                gender=gender,
+                position=line_position or current_position,
+                need_type=need_type,
+            )
+        )
+
     for match in re.finditer(r"(\d+)\s*\(?\s*(ж|м)\s*\)?(?![а-яё.])", lowered):
         items.append(
             make_item(
