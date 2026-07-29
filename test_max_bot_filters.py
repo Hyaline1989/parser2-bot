@@ -2,6 +2,7 @@ import unittest
 
 from max_bot import (
     looks_like_candidate_medical_issue,
+    looks_like_candidate_review_question,
     looks_like_need,
     looks_like_passport_correction,
     looks_like_training_schedule,
@@ -36,6 +37,8 @@ PASSPORT_CORRECTION_MESSAGE = (
     "в паспорте грузчик 3 400 (300 р/ч). Исправьте пожалуйста на 3 300. "
     "работают они по 11 часов"
 )
+
+CANDIDATE_REVIEW_MESSAGE = "Женщина, 56 лет, можем рассмотреть?"
 
 
 class MaxBotFilterTests(unittest.TestCase):
@@ -74,6 +77,15 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_requirement_with_passport_note_is_not_hidden(self):
         message = "Нужны 3 грузчика, ставка указана в паспорте объекта"
         self.assertFalse(looks_like_passport_correction(message))
+        self.assertTrue(looks_like_need(message))
+
+    def test_candidate_age_review_question_is_not_a_requirement(self):
+        self.assertTrue(looks_like_candidate_review_question(CANDIDATE_REVIEW_MESSAGE))
+        self.assertFalse(looks_like_need(CANDIDATE_REVIEW_MESSAGE))
+
+    def test_real_requirement_with_age_limit_is_not_hidden(self):
+        message = "Нужны 3 женщины до 56 лет"
+        self.assertFalse(looks_like_candidate_review_question(message))
         self.assertTrue(looks_like_need(message))
 
 

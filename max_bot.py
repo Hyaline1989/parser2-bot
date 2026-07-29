@@ -450,6 +450,41 @@ def looks_like_passport_correction(text):
     )
 
 
+def looks_like_candidate_review_question(text):
+    """Отсекает вопросы о возможности принять конкретного кандидата."""
+    lowered = text.lower()
+    candidate_markers = [
+        "\u0436\u0435\u043d\u0449\u0438\u043d\u0430",
+        "\u043c\u0443\u0436\u0447\u0438\u043d\u0430",
+        "\u043a\u0430\u043d\u0434\u0438\u0434\u0430\u0442",
+    ]
+    review_markers = [
+        "\u043c\u043e\u0436\u0435\u043c \u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0435\u0442\u044c",
+        "\u043c\u043e\u0436\u043d\u043e \u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0435\u0442\u044c",
+        "\u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u0442\u0435",
+        "\u0432\u043e\u0437\u044c\u043c\u0451\u0442\u0435",
+        "\u0432\u043e\u0437\u044c\u043c\u0435\u0442\u0435",
+        "\u043f\u0440\u0438\u043c\u0435\u0442\u0435",
+    ]
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    has_age = bool(
+        re.search(r"\b\d{1,2}\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434\u0430?|\u0433\.)\b", lowered)
+    )
+    return (
+        "?" in lowered
+        and has_age
+        and any(marker in lowered for marker in candidate_markers)
+        and any(marker in lowered for marker in review_markers)
+        and not any(marker in lowered for marker in direct_need_markers)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -468,6 +503,7 @@ def looks_like_need(text):
         or looks_like_training_schedule(text)
         or looks_like_candidate_medical_issue(text)
         or looks_like_passport_correction(text)
+        or looks_like_candidate_review_question(text)
     ):
         return False
 
