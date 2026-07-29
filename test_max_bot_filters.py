@@ -4,6 +4,7 @@ from max_bot import (
     looks_like_candidate_medical_issue,
     looks_like_candidate_review_question,
     looks_like_need,
+    looks_like_need_fulfillment_question,
     looks_like_passport_correction,
     looks_like_training_schedule,
 )
@@ -39,6 +40,11 @@ PASSPORT_CORRECTION_MESSAGE = (
 )
 
 CANDIDATE_REVIEW_MESSAGE = "Женщина, 56 лет, можем рассмотреть?"
+
+NEED_FULFILLMENT_QUESTION = (
+    "Подскажите, как быстро сможем закрыть потребность +4 девочки "
+    "(2 день/2 ночь) на упаковку?"
+)
 
 
 class MaxBotFilterTests(unittest.TestCase):
@@ -86,6 +92,17 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_requirement_with_age_limit_is_not_hidden(self):
         message = "Нужны 3 женщины до 56 лет"
         self.assertFalse(looks_like_candidate_review_question(message))
+        self.assertTrue(looks_like_need(message))
+
+    def test_question_about_closing_existing_need_is_not_a_new_requirement(self):
+        self.assertTrue(
+            looks_like_need_fulfillment_question(NEED_FULFILLMENT_QUESTION)
+        )
+        self.assertFalse(looks_like_need(NEED_FULFILLMENT_QUESTION))
+
+    def test_direct_need_with_same_count_is_not_hidden(self):
+        message = "Потребность +4 женщины на упаковку"
+        self.assertFalse(looks_like_need_fulfillment_question(message))
         self.assertTrue(looks_like_need(message))
 
 

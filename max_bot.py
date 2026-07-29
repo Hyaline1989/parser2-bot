@@ -485,6 +485,29 @@ def looks_like_candidate_review_question(text):
     )
 
 
+def looks_like_need_fulfillment_question(text):
+    """Отсекает вопросы о сроках закрытия уже существующей потребности."""
+    lowered = text.lower()
+    question_markers = [
+        "\u043a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e",
+        "\u043a\u043e\u0433\u0434\u0430",
+        "\u0437\u0430 \u043a\u0430\u043a\u043e\u0435 \u0432\u0440\u0435\u043c\u044f",
+        "\u043a\u0430\u043a \u0441\u043a\u043e\u0440\u043e",
+    ]
+    fulfillment_markers = [
+        "\u0437\u0430\u043a\u0440\u044b\u0442\u044c \u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u043a\u0440\u043e\u0435\u043c \u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u043a\u0440\u043e\u0435\u0442\u0435 \u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u043a\u0440\u044b\u0442\u044c \u0437\u0430\u044f\u0432\u043a\u0443",
+        "\u0437\u0430\u043a\u0440\u043e\u0435\u043c \u0437\u0430\u044f\u0432\u043a\u0443",
+        "\u0437\u0430\u043a\u0440\u043e\u0435\u0442\u0435 \u0437\u0430\u044f\u0432\u043a\u0443",
+    ]
+    return (
+        any(marker in lowered for marker in question_markers)
+        and any(marker in lowered for marker in fulfillment_markers)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -504,6 +527,7 @@ def looks_like_need(text):
         or looks_like_candidate_medical_issue(text)
         or looks_like_passport_correction(text)
         or looks_like_candidate_review_question(text)
+        or looks_like_need_fulfillment_question(text)
     ):
         return False
 

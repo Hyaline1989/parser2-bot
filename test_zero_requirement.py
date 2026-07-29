@@ -26,7 +26,12 @@ class ZeroRequirementTests(unittest.TestCase):
     def test_common_clear_phrases(self):
         self.assertTrue(is_zero_requirement("Потребности больше нет"))
         self.assertTrue(is_zero_requirement("Обнулить потребность"))
-        self.assertTrue(is_zero_requirement("Закрыть потребность"))
+        self.assertFalse(is_zero_requirement("Закрыть потребность"))
+        self.assertFalse(
+            is_zero_requirement(
+                "Как быстро сможем закрыть потребность +4 девочки?"
+            )
+        )
 
     def test_unrelated_zero_is_not_clear_command(self):
         self.assertFalse(is_zero_requirement("Выход сегодня 0 человек"))

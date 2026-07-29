@@ -24,7 +24,6 @@ def is_zero_requirement(text):
         r"\bпотребност\w*\s*(?:[:=\-–—]\s*)?0\b",
         r"\bпотребност(?:ь|и)\s+(?:больше\s+)?нет\b",
         r"\bобнул(?:ить|ите|яем|яется)\s+потребност\w*\b",
-        r"\bзакрыть\s+потребност\w*\b",
     ]
     return any(re.search(pattern, lowered) for pattern in patterns)
 
