@@ -11,6 +11,9 @@ POSITION_ALIASES = get_position_aliases()
 POSITION_HINTS = sorted(POSITION_ALIASES, key=len, reverse=True)
 POSITION_GENDER_DEFAULTS = get_position_gender_defaults()
 ALL_POSITIONS = "Все должности"
+DEFAULT_CITIZENSHIP_BY_OBJECT = {
+    "КуулКлевер": "СНГ",
+}
 
 
 def is_zero_requirement(text):
@@ -60,7 +63,7 @@ def parse_message(message):
     drafts = []
     current_position = find_default_position_in_message(object_name, text)
     family_fallback_position = None
-    current_citizenship = "РФ/РБ"
+    current_citizenship = DEFAULT_CITIZENSHIP_BY_OBJECT.get(object_name, "РФ/РБ")
 
     for raw_line in text_for_parsing.splitlines():
         line = clean_line(raw_line)
