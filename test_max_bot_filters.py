@@ -41,6 +41,10 @@ PASSPORT_CORRECTION_MESSAGE = (
 
 CANDIDATE_REVIEW_MESSAGE = "Женщина, 56 лет, можем рассмотреть?"
 
+CANDIDATE_SIZE_AND_AGE_MESSAGE = (
+    "Женщина 56 размер по возрасту типа 45\n\nСможем принять?"
+)
+
 NEED_FULFILLMENT_QUESTION = (
     "Подскажите, как быстро сможем закрыть потребность +4 девочки "
     "(2 день/2 ночь) на упаковку?"
@@ -88,6 +92,12 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_candidate_age_review_question_is_not_a_requirement(self):
         self.assertTrue(looks_like_candidate_review_question(CANDIDATE_REVIEW_MESSAGE))
         self.assertFalse(looks_like_need(CANDIDATE_REVIEW_MESSAGE))
+
+    def test_candidate_size_and_age_question_is_not_a_requirement(self):
+        self.assertTrue(
+            looks_like_candidate_review_question(CANDIDATE_SIZE_AND_AGE_MESSAGE)
+        )
+        self.assertFalse(looks_like_need(CANDIDATE_SIZE_AND_AGE_MESSAGE))
 
     def test_real_requirement_with_age_limit_is_not_hidden(self):
         message = "Нужны 3 женщины до 56 лет"

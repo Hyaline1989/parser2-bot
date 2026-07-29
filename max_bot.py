@@ -462,6 +462,9 @@ def looks_like_candidate_review_question(text):
         "\u043c\u043e\u0436\u0435\u043c \u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0435\u0442\u044c",
         "\u043c\u043e\u0436\u043d\u043e \u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0435\u0442\u044c",
         "\u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0438\u0442\u0435",
+        "\u0441\u043c\u043e\u0436\u0435\u043c \u043f\u0440\u0438\u043d\u044f\u0442\u044c",
+        "\u043c\u043e\u0436\u0435\u043c \u043f\u0440\u0438\u043d\u044f\u0442\u044c",
+        "\u0441\u043c\u043e\u0436\u0435\u0442\u0435 \u043f\u0440\u0438\u043d\u044f\u0442\u044c",
         "\u0432\u043e\u0437\u044c\u043c\u0451\u0442\u0435",
         "\u0432\u043e\u0437\u044c\u043c\u0435\u0442\u0435",
         "\u043f\u0440\u0438\u043c\u0435\u0442\u0435",
@@ -476,9 +479,10 @@ def looks_like_candidate_review_question(text):
     has_age = bool(
         re.search(r"\b\d{1,2}\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434\u0430?|\u0433\.)\b", lowered)
     )
+    has_person_number = bool(re.search(r"\b\d{1,3}\b", lowered))
     return (
         "?" in lowered
-        and has_age
+        and (has_age or has_person_number)
         and any(marker in lowered for marker in candidate_markers)
         and any(marker in lowered for marker in review_markers)
         and not any(marker in lowered for marker in direct_need_markers)
