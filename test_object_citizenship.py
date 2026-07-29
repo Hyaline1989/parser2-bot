@@ -43,6 +43,21 @@ class ObjectCitizenshipTests(unittest.TestCase):
         self.assertEqual(rows[0]["rf_rb_m"], 2)
         self.assertEqual(rows[0]["cis_m"], 0)
 
+    def test_klinsky_defaults_to_cis(self):
+        drafts = parse_message(
+            {
+                "source": "MAX: Клинский мясокомбинат",
+                "object": "Клинский мясокомбинат",
+                "text": "Потребность 8 муж/ 7 жен",
+            }
+        )
+        rows = build_vector_rows(drafts)
+
+        self.assertEqual(rows[0]["cis_m"], 8)
+        self.assertEqual(rows[0]["cis_f"], 7)
+        self.assertEqual(rows[0]["rf_rb_m"], 0)
+        self.assertEqual(rows[0]["rf_rb_f"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
