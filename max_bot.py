@@ -512,6 +512,36 @@ def looks_like_need_fulfillment_question(text):
     )
 
 
+def looks_like_workwear_or_safety_notice(text):
+    """Отсекает объявления о форме, ТБ и фактическом проходе сотрудников."""
+    lowered = text.lower()
+    notice_markers = [
+        "\u0444\u043e\u0440\u043c\u0430 \u043e\u0434\u0435\u0436\u0434\u044b",
+        "\u0444\u043e\u0440\u043c\u0435 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432",
+        "\u0447\u0435\u0440\u043d\u0430\u044f \u0444\u0443\u0442\u0431\u043e\u043b\u043a\u0430",
+        "\u0447\u0451\u0440\u043d\u0430\u044f \u0444\u0443\u0442\u0431\u043e\u043b\u043a\u0430",
+        "\u0437\u0430\u043a\u0440\u044b\u0442\u0430\u044f \u043e\u0431\u0443\u0432\u044c",
+        "\u0436\u0438\u043b\u0435\u0442\u043a",
+        "\u0442\u0440\u0435\u0431\u043e\u0432\u0430\u043d\u0438\u0435 \u0442\u0431",
+        "\u0442\u0435\u0445\u043d\u0438\u043a\u0430 \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u0438",
+        "\u043d\u0435 \u043f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b\u0438",
+        "\u043d\u0430 \u043a\u043f\u043f",
+        "\u0441\u0442\u0440\u043e\u0433\u0438\u0439 \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c",
+        "\u043d\u0430 \u0441\u043c\u0435\u043d\u0443 \u0437\u0430\u0448\u043b\u0438",
+    ]
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    return (
+        sum(marker in lowered for marker in notice_markers) >= 2
+        and not any(marker in lowered for marker in direct_need_markers)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -532,6 +562,7 @@ def looks_like_need(text):
         or looks_like_passport_correction(text)
         or looks_like_candidate_review_question(text)
         or looks_like_need_fulfillment_question(text)
+        or looks_like_workwear_or_safety_notice(text)
     ):
         return False
 

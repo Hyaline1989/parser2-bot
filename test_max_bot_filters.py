@@ -7,6 +7,7 @@ from max_bot import (
     looks_like_need_fulfillment_question,
     looks_like_passport_correction,
     looks_like_training_schedule,
+    looks_like_workwear_or_safety_notice,
 )
 
 
@@ -48,6 +49,14 @@ CANDIDATE_SIZE_AND_AGE_MESSAGE = (
 NEED_FULFILLMENT_QUESTION = (
     "Подскажите, как быстро сможем закрыть потребность +4 девочки "
     "(2 день/2 ночь) на упаковку?"
+)
+
+WORKWEAR_NOTICE_MESSAGE = (
+    "Форма одежды, в которой должны быть сотрудники на складе. "
+    "Чёрная однотонная одежда, закрытая обувь. Обязательно, чтобы была жилетка. "
+    "Сегодня не пропустили 10 человек на первый рабочий день. Это требование ТБ. "
+    "Из 10 новых сотрудников на КПП не пропустили 5 наших, "
+    "на смену зашли 37 человек."
 )
 
 
@@ -113,6 +122,15 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_direct_need_with_same_count_is_not_hidden(self):
         message = "Потребность +4 женщины на упаковку"
         self.assertFalse(looks_like_need_fulfillment_question(message))
+        self.assertTrue(looks_like_need(message))
+
+    def test_workwear_and_checkpoint_notice_is_not_a_requirement(self):
+        self.assertTrue(looks_like_workwear_or_safety_notice(WORKWEAR_NOTICE_MESSAGE))
+        self.assertFalse(looks_like_need(WORKWEAR_NOTICE_MESSAGE))
+
+    def test_real_need_with_workwear_note_is_not_hidden(self):
+        message = "Нужны 10 сотрудников. Форма одежды — чёрная футболка и закрытая обувь"
+        self.assertFalse(looks_like_workwear_or_safety_notice(message))
         self.assertTrue(looks_like_need(message))
 
 
