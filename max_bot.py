@@ -153,6 +153,8 @@ def looks_like_candidate_travel(text):
         "\u043a\u0443\u043f\u0438\u043b \u0431\u0438\u043b\u0435\u0442",
         "\u043a\u0443\u043f\u0438\u043b\u0430 \u0431\u0438\u043b\u0435\u0442",
         "\u0431\u0438\u043b\u0435\u0442 \u043d\u0430",
+        "\u0441 \u0431\u0438\u043b\u0435\u0442\u0430\u043c\u0438",
+        "\u0431\u0438\u043b\u0435\u0442\u0430\u043c\u0438 \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d",
         "\u043d\u0430 \u0434\u043e\u0435\u0437\u0434\u0435",
     ]
     need_markers = [
@@ -455,8 +457,11 @@ def looks_like_candidate_review_question(text):
     lowered = text.lower()
     candidate_markers = [
         "\u0436\u0435\u043d\u0449\u0438\u043d\u0430",
+        "\u0436\u0435\u043d\u0449\u0438\u043d",
         "\u043c\u0443\u0436\u0447\u0438\u043d\u0430",
+        "\u043c\u0443\u0436\u0447\u0438\u043d",
         "\u043a\u0430\u043d\u0434\u0438\u0434\u0430\u0442",
+        "\u0441\u0435\u043c\u0435\u0439\u043d\u0430\u044f \u043f\u0430\u0440\u0430",
     ]
     review_markers = [
         "\u043c\u043e\u0436\u0435\u043c \u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\u0435\u0442\u044c",
@@ -465,6 +470,9 @@ def looks_like_candidate_review_question(text):
         "\u0441\u043c\u043e\u0436\u0435\u043c \u043f\u0440\u0438\u043d\u044f\u0442\u044c",
         "\u043c\u043e\u0436\u0435\u043c \u043f\u0440\u0438\u043d\u044f\u0442\u044c",
         "\u0441\u043c\u043e\u0436\u0435\u0442\u0435 \u043f\u0440\u0438\u043d\u044f\u0442\u044c",
+        "\u043c\u043e\u0436\u0435\u043c \u043d\u0430\u043f\u0440\u0430\u0432\u0438\u0442\u044c",
+        "\u043c\u043e\u0436\u043d\u043e \u043d\u0430\u043f\u0440\u0430\u0432\u0438\u0442\u044c",
+        "\u0441\u043c\u043e\u0436\u0435\u043c \u043d\u0430\u043f\u0440\u0430\u0432\u0438\u0442\u044c",
         "\u0432\u043e\u0437\u044c\u043c\u0451\u0442\u0435",
         "\u0432\u043e\u0437\u044c\u043c\u0435\u0442\u0435",
         "\u043f\u0440\u0438\u043c\u0435\u0442\u0435",
@@ -480,11 +488,16 @@ def looks_like_candidate_review_question(text):
         re.search(r"\b\d{1,2}\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434\u0430?|\u0433\.)\b", lowered)
     )
     has_person_number = bool(re.search(r"\b\d{1,3}\b", lowered))
+    has_age_context = (
+        has_age
+        or "\u0432\u043e\u0437\u0440\u0430\u0441\u0442" in lowered
+        or "\u043f\u043e \u0432\u043e\u0437\u0440\u0430\u0441\u0442\u0443" in lowered
+    )
+    has_review_wording = any(marker in lowered for marker in review_markers)
     return (
-        "?" in lowered
-        and (has_age or has_person_number)
+        ("?" in lowered or has_review_wording)
+        and (has_age_context or (has_person_number and has_review_wording))
         and any(marker in lowered for marker in candidate_markers)
-        and any(marker in lowered for marker in review_markers)
         and not any(marker in lowered for marker in direct_need_markers)
     )
 

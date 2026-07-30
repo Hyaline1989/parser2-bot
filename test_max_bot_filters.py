@@ -59,6 +59,16 @@ WORKWEAR_NOTICE_MESSAGE = (
     "на смену зашли 37 человек."
 )
 
+FAMILY_CANDIDATE_REVIEW_MESSAGE = (
+    "Коллеги, есть семейная пара, по СБ прошли, но женщине 46 лет. "
+    "Можем направить?"
+)
+
+ALREADY_DIRECTED_WITH_TICKETS_MESSAGE = (
+    "У меня уже две женщины с билетами направлены на 3 и 4 число. "
+    "Учтите пожалуйста это тоже"
+)
+
 
 class MaxBotFilterTests(unittest.TestCase):
     def test_training_schedule_is_not_a_requirement(self):
@@ -131,6 +141,34 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_need_with_workwear_note_is_not_hidden(self):
         message = "Нужны 10 сотрудников. Форма одежды — чёрная футболка и закрытая обувь"
         self.assertFalse(looks_like_workwear_or_safety_notice(message))
+        self.assertTrue(looks_like_need(message))
+
+    def test_family_candidate_age_question_is_not_a_requirement(self):
+        self.assertTrue(
+            looks_like_candidate_review_question(FAMILY_CANDIDATE_REVIEW_MESSAGE)
+        )
+        self.assertFalse(looks_like_need(FAMILY_CANDIDATE_REVIEW_MESSAGE))
+
+    def test_short_age_question_is_not_a_requirement(self):
+        message = "Женщина 48 лет, можно?"
+        self.assertTrue(looks_like_candidate_review_question(message))
+        self.assertFalse(looks_like_need(message))
+
+    def test_age_question_without_question_mark_is_not_a_requirement(self):
+        message = "Мужчина 52 года, возьмёте"
+        self.assertTrue(looks_like_candidate_review_question(message))
+        self.assertFalse(looks_like_need(message))
+
+    def test_plural_age_requirement_is_not_hidden(self):
+        message = "Нужны 5 женщин до 45 лет"
+        self.assertFalse(looks_like_candidate_review_question(message))
+        self.assertTrue(looks_like_need(message))
+
+    def test_already_directed_women_with_tickets_are_not_a_requirement(self):
+        self.assertFalse(looks_like_need(ALREADY_DIRECTED_WITH_TICKETS_MESSAGE))
+
+    def test_real_need_for_people_with_tickets_is_not_hidden(self):
+        message = "Нужны 2 женщины с билетами"
         self.assertTrue(looks_like_need(message))
 
 
