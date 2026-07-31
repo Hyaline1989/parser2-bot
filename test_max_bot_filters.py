@@ -2,9 +2,11 @@ import unittest
 
 from max_bot import (
     looks_like_candidate_medical_issue,
+    looks_like_candidate_coordination,
     looks_like_candidate_review_question,
     looks_like_need,
     looks_like_need_fulfillment_question,
+    looks_like_medical_exam_notice,
     looks_like_passport_correction,
     looks_like_training_schedule,
     looks_like_workwear_or_safety_notice,
@@ -67,6 +69,16 @@ FAMILY_CANDIDATE_REVIEW_MESSAGE = (
 ALREADY_DIRECTED_WITH_TICKETS_MESSAGE = (
     "У меня уже две женщины с билетами направлены на 3 и 4 число. "
     "Учтите пожалуйста это тоже"
+)
+
+MEDICAL_EXAM_NOTICE_MESSAGE = (
+    "Женщина 1973 года рождения - полная медленная. Вторая молодая нормальная. "
+    "Ждать им до понедельника до медкомиссии. Напоминаю — мед комиссии в Павлово "
+    "проходят: понедельник, вторник, четверг. Без комиссии входа на фабрику нет."
+)
+
+ARRIVING_GROUP_APPROVAL_MESSAGE = (
+    "Анна Менеджер Комплект примем 3 М одной компанией? Приезжают 03.08"
 )
 
 
@@ -170,6 +182,46 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_need_for_people_with_tickets_is_not_hidden(self):
         message = "Нужны 2 женщины с билетами"
         self.assertTrue(looks_like_need(message))
+
+    def test_birth_year_and_medical_exam_schedule_are_not_a_requirement(self):
+        self.assertTrue(looks_like_medical_exam_notice(MEDICAL_EXAM_NOTICE_MESSAGE))
+        self.assertFalse(looks_like_need(MEDICAL_EXAM_NOTICE_MESSAGE))
+
+    def test_real_need_with_medical_exam_schedule_is_not_hidden(self):
+        message = "Нужны 2 женщины, медкомиссия в понедельник"
+        self.assertFalse(looks_like_medical_exam_notice(message))
+        self.assertTrue(looks_like_need(message))
+
+    def test_arriving_group_approval_is_not_a_requirement(self):
+        self.assertFalse(looks_like_need(ARRIVING_GROUP_APPROVAL_MESSAGE))
+
+    def test_real_need_with_arrival_date_is_not_hidden(self):
+        message = "Нужны 3 мужчины, приезжают 03.08"
+        self.assertTrue(looks_like_need(message))
+
+    def test_candidate_coordination_paraphrases_are_filtered(self):
+        messages = [
+            "Есть кандидат 49 лет, согласуете?",
+            "Две девушки купили билеты и уже едут",
+            "Можно направить семейную пару, приедут завтра?",
+            "Троих мужчин возьмём? Они на доезде",
+            "Кандидаты уже отправлены, билеты на пятницу",
+        ]
+        for message in messages:
+            with self.subTest(message=message):
+                self.assertTrue(looks_like_candidate_coordination(message))
+                self.assertFalse(looks_like_need(message))
+
+    def test_explicit_new_need_overrides_candidate_words(self):
+        messages = [
+            "Нужны 3 мужчины, приедут завтра",
+            "Требуются две женщины с билетами",
+            "Потребность: 4 кандидата",
+        ]
+        for message in messages:
+            with self.subTest(message=message):
+                self.assertFalse(looks_like_candidate_coordination(message))
+                self.assertTrue(looks_like_need(message))
 
 
 if __name__ == "__main__":

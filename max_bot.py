@@ -160,6 +160,8 @@ def looks_like_candidate_travel(text):
     need_markers = [
         "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
         "\u043f\u043e\u0442\u043e\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
         "\u043d\u0443\u0436\u043d\u043e",
         "\u043d\u0443\u0436\u043d\u044b",
         "\u043d\u0443\u0436\u0435\u043d",
@@ -334,8 +336,10 @@ def looks_like_arrival_coordination(text):
         "\u0432\u043e\u0437\u044c\u043c\u0451\u0442\u0435",
         "\u0432\u043e\u0437\u044c\u043c\u0435\u0442\u0435",
         "\u043f\u0440\u0438\u043c\u0435\u0442\u0435",
+        "\u043f\u0440\u0438\u043c\u0435\u043c",
         "\u0433\u043e\u0442\u043e\u0432\u044b \u043f\u0440\u0438\u0435\u0445\u0430\u0442\u044c",
         "\u0433\u043e\u0442\u043e\u0432 \u043f\u0440\u0438\u0435\u0445\u0430\u0442\u044c",
+        "\u043f\u0440\u0438\u0435\u0437\u0436\u0430\u044e\u0442",
         "\u0442\u0430\u043a\u0441\u0438",
         "\u043a\u0443\u0434\u0430 \u0432\u0435\u0437\u0442\u0438",
     ]
@@ -555,6 +559,93 @@ def looks_like_workwear_or_safety_notice(text):
     )
 
 
+def looks_like_medical_exam_notice(text):
+    """Отсекает сведения о кандидатах и расписании медкомиссии."""
+    lowered = text.lower()
+    medical_markers = [
+        "\u043c\u0435\u0434\u043a\u043e\u043c\u0438\u0441\u0441",
+        "\u043c\u0435\u0434 \u043a\u043e\u043c\u0438\u0441\u0441",
+        "\u0431\u0435\u0437 \u043a\u043e\u043c\u0438\u0441\u0441\u0438\u0438",
+    ]
+    information_markers = [
+        "\u0433\u043e\u0434\u0430 \u0440\u043e\u0436\u0434\u0435\u043d\u0438\u044f",
+        "\u0433\u043e\u0434 \u0440\u043e\u0436\u0434\u0435\u043d\u0438\u044f",
+        "\u0436\u0434\u0430\u0442\u044c \u0438\u043c",
+        "\u0434\u043e \u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a\u0430",
+        "\u043f\u0440\u043e\u0445\u043e\u0434\u044f\u0442",
+        "\u0432\u0445\u043e\u0434\u0430 \u043d\u0430 \u0444\u0430\u0431\u0440\u0438\u043a\u0443 \u043d\u0435\u0442",
+        "\u043f\u043e\u043d\u0435\u0434\u0435\u043b\u044c\u043d\u0438\u043a",
+        "\u0432\u0442\u043e\u0440\u043d\u0438\u043a",
+        "\u0447\u0435\u0442\u0432\u0435\u0440\u0433",
+    ]
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    has_birth_year = bool(
+        re.search(r"\b(?:19|20)\d{2}\s*\u0433\u043e\u0434\u0430?\s+\u0440\u043e\u0436\u0434\u0435\u043d\u0438\u044f\b", lowered)
+    )
+    return (
+        any(marker in lowered for marker in medical_markers)
+        and (has_birth_year or sum(marker in lowered for marker in information_markers) >= 2)
+        and not any(marker in lowered for marker in direct_need_markers)
+    )
+
+
+def looks_like_candidate_coordination(text):
+    """Широкий фильтр согласования и логистики уже найденных кандидатов."""
+    lowered = text.lower()
+    explicit_new_need = bool(
+        re.search(
+            r"\b(?:\u043d\u0443\u0436\u043d\u044b|\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f)"
+            r"\b|\b(?:\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c|\u0437\u0430\u044f\u0432\u043a\u0430)"
+            r"\s*(?:[:=\-\u2013\u2014]\s*)?\+?\d+\b",
+            lowered,
+        )
+    )
+    if explicit_new_need:
+        return False
+
+    has_candidate = bool(
+        re.search(
+            r"\b(?:\u043a\u0430\u043d\u0434\u0438\u0434\u0430\u0442\w*|\u0436\u0435\u043d\u0449\u0438\u043d\w*|"
+            r"\u043c\u0443\u0436\u0447\u0438\u043d\w*|\u0434\u0435\u0432\u0443\u0448\w*|\u043f\u0430\u0440\u043d\w*|"
+            r"\u0441\u0435\u043c\u0435\u0439\u043d\w*\s+\u043f\u0430\u0440\w*|\d+\s*[\u043c\u0436]\b)",
+            lowered,
+        )
+    )
+    has_coordination = bool(
+        re.search(
+            r"\b(?:\u043f\u0440\u0438\u043c\w*|\u0432\u043e\u0437\u044c\u043c\w*|\u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\w*|"
+            r"\u043d\u0430\u043f\u0440\u0430\u0432\w*|\u0441\u043e\u0433\u043b\u0430\u0441\w*|\u043e\u0442\u043f\u0440\u0430\u0432\w*)",
+            lowered,
+        )
+    )
+    has_logistics_or_profile = bool(
+        re.search(
+            r"\b(?:\u043f\u0440\u0438\u0435\u0437\u0436\w*|\u043f\u0440\u0438\u0435\u0434\w*|\u0437\u0430\u0435\u0445\w*|"
+            r"\u0431\u0438\u043b\u0435\u0442\w*|\u0434\u043e\u0435\u0437\u0434\w*|\u043c\u0435\u0434\s*\u043a\u043e\u043c\u0438\u0441\u0441\w*|"
+            r"\u043c\u0435\u0434\u043a\u043e\u043c\u0438\u0441\u0441\w*|\u0433\u043e\u0434\w*\s+\u0440\u043e\u0436\u0434\u0435\u043d\u0438\u044f|"
+            r"\d{1,2}\s*\u043b\u0435\u0442|\u0432\u043e\u0437\u0440\u0430\u0441\u0442\w*)",
+            lowered,
+        )
+    )
+    already_in_process = bool(
+        re.search(
+            r"\b(?:\u0443\u0436\u0435|\u0435\u0434\u0443\u0442|\u0435\u0434\u0435\u0442|\u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\w*|"
+            r"\u043a\u0443\u043f\u0438\u043b\w*\s+\u0431\u0438\u043b\u0435\u0442\w*|\u0433\u043e\u0442\u043e\u0432\w*\s+\u043f\u0440\u0438\u0435\u0445\u0430\u0442\u044c)",
+            lowered,
+        )
+    )
+    return has_candidate and (
+        (has_coordination and ("?" in lowered or has_logistics_or_profile))
+        or (already_in_process and has_logistics_or_profile)
+    )
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -576,6 +667,8 @@ def looks_like_need(text):
         or looks_like_candidate_review_question(text)
         or looks_like_need_fulfillment_question(text)
         or looks_like_workwear_or_safety_notice(text)
+        or looks_like_medical_exam_notice(text)
+        or looks_like_candidate_coordination(text)
     ):
         return False
 
