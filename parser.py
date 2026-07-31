@@ -25,7 +25,27 @@ def is_zero_requirement(text):
         r"\bпотребност(?:ь|и)\s+(?:больше\s+)?нет\b",
         r"\bобнул(?:ить|ите|яем|яется)\s+потребност\w*\b",
     ]
-    return any(re.search(pattern, lowered) for pattern in patterns)
+    if any(re.search(pattern, lowered) for pattern in patterns):
+        return True
+
+    # Полная таблица потребности, где все кадровые категории равны нулю.
+    # Даты и время не попадут сюда: число должно стоять рядом с полом/семьями.
+    if "потребност" not in lowered:
+        return False
+    gender_then_quantity = re.findall(
+        r"\b(?:мужск\w*|женск\w*|мужчин\w*|женщин\w*|семейн\w*)"
+        r"\s*[:=\-–—]?\s*(\d+)\b",
+        lowered,
+    )
+    quantity_then_gender = re.findall(
+        r"\b(\d+)\s*(?:мужск\w*|женск\w*|мужчин\w*|женщин\w*|семейн\w*)\b",
+        lowered,
+    )
+    staffing_quantities = [
+        int(value)
+        for value in gender_then_quantity + quantity_then_gender
+    ]
+    return bool(staffing_quantities) and all(value == 0 for value in staffing_quantities)
 
 
 def parse_messages(messages):

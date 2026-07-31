@@ -37,6 +37,33 @@ class ZeroRequirementTests(unittest.TestCase):
         self.assertFalse(is_zero_requirement("Выход сегодня 0 человек"))
         self.assertFalse(is_zero_requirement("Потребность была 5, вышло 0"))
 
+    def test_all_zero_staffing_table_clears_object(self):
+        message = """31.07.2026
+ПОТРЕБНОСТЬ В ПЕРСОНАЛЕ
+• мужских: 0 ПЕКАРНЯ
+• женских: 0 (пекарня)
+• женских: 0 (холодное производство)
+• 0 женщины (с 7.00 до 19.00)
+• 0 мужчина (с 19.00 до 7.00)
+• 0 мужчина (с 7.00 до 19.00)"""
+
+        self.assertTrue(is_zero_requirement(message))
+        drafts = parse_message(
+            {
+                "source": "MAX: КуулКлевер",
+                "object": "КуулКлевер",
+                "text": message,
+            }
+        )
+        self.assertEqual(drafts[0]["position"], ALL_POSITIONS)
+        self.assertEqual(drafts[0]["operation"], "обнулить")
+
+    def test_mixed_zero_and_positive_table_does_not_clear_object(self):
+        message = """ПОТРЕБНОСТЬ В ПЕРСОНАЛЕ
+мужских: 0
+женских: 5"""
+        self.assertFalse(is_zero_requirement(message))
+
 
 if __name__ == "__main__":
     unittest.main()
