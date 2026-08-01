@@ -34,7 +34,7 @@ def is_zero_requirement(text):
         return False
     gender_then_quantity = re.findall(
         r"\b(?:мужск\w*|женск\w*|мужчин\w*|женщин\w*|семейн\w*)"
-        r"\s*[:=\-–—]?\s*(\d+)\b",
+        r"\s*[:=\-–—]?\s*(\d+)(?!\d)",
         lowered,
     )
     quantity_then_gender = re.findall(
@@ -255,7 +255,7 @@ def parse_need_line(line, current_position):
         lowered,
     )
     if gender_match:
-        quantity_match = re.search(r"[-: ]\s*(\d+)\b(?![.:]\d)", lowered[gender_match.end() :])
+        quantity_match = re.search(r"[-: ]\s*(\d+)(?!\d|[.:]\d)", lowered[gender_match.end() :])
         if quantity_match:
             quantity = quantity_match.group(1)
             tail_start = gender_match.end() + quantity_match.end()
