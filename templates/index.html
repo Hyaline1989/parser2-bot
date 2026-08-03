@@ -49,10 +49,11 @@
             <div class="main-actions">
                 {% if confirmed_drafts_count > 0 %}
                 <button class="vector-preview-button" type="button" data-action="vector-preview-confirmed">
-                    Проверить готовые ({{ confirmed_drafts_count }})
+                    Проверить всё перед публикацией ({{ confirmed_drafts_count }})
                 </button>
-                <button class="vector-publish-button" type="button" data-action="publish-confirmed-to-vector" hidden>
-                    Опубликовать готовые в Вектор
+                <button class="vector-publish-button" type="button" data-action="publish-confirmed-to-vector"
+                        disabled title="Сначала нажмите «Проверить всё перед публикацией»">
+                    Опубликовать всё в Вектор
                 </button>
                 {% endif %}
                 {% if working_drafts_count > 0 %}

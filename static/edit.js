@@ -356,15 +356,19 @@ document.addEventListener('click', async (event) => {
                 headers: {'Content-Type': 'application/json'},
             }, 'Не удалось проверить готовые черновики');
             previewBox.textContent = `Черновиков: ${result.draft_count}\n\n${formatVectorPreview(result.preview)}`;
-            publishButton.hidden = result.preview.errors.length > 0;
+            publishButton.disabled = result.preview.errors.length > 0;
+            publishButton.title = result.preview.errors.length > 0
+                ? 'Сначала исправьте ошибки общей проверки'
+                : `Опубликовать подтверждённые черновики: ${result.draft_count}`;
         } catch (error) {
             previewBox.textContent = error.message;
             if (publishButton) {
-                publishButton.hidden = true;
+                publishButton.disabled = true;
+                publishButton.title = 'Общая проверка завершилась с ошибкой';
             }
         } finally {
             bulkPreviewButton.disabled = false;
-            bulkPreviewButton.textContent = 'Проверить готовые';
+            bulkPreviewButton.textContent = 'Проверить всё перед публикацией';
         }
         return;
     }
@@ -378,7 +382,7 @@ document.addEventListener('click', async (event) => {
         }
 
         bulkPublishButton.disabled = true;
-        bulkPublishButton.textContent = 'Публикую готовые...';
+        bulkPublishButton.textContent = 'Публикую всё...';
         previewBox.hidden = false;
         previewBox.textContent = 'Создаю резервную копию и публикую в Вектор...';
 
@@ -393,7 +397,7 @@ document.addEventListener('click', async (event) => {
         } catch (error) {
             previewBox.textContent = error.message;
             bulkPublishButton.disabled = false;
-            bulkPublishButton.textContent = 'Опубликовать готовые в Вектор';
+            bulkPublishButton.textContent = 'Опубликовать всё в Вектор';
         }
         return;
     }
