@@ -213,6 +213,29 @@ class MaxBotFilterTests(unittest.TestCase):
         message = "Нужны 3 мужчины, приезжают 03.08"
         self.assertTrue(looks_like_need(message))
 
+    def test_estimated_weekly_delivery_is_not_a_requirement(self):
+        message = (
+            "ориентировочно 14 человек, 7 на одной неделе и 7 на второй. "
+            "естественно, получится больше - дадим больше"
+        )
+        self.assertFalse(looks_like_need(message))
+
+    def test_short_quantity_confirmation_is_not_a_requirement(self):
+        self.assertFalse(looks_like_need("80 ж?"))
+
+    def test_explicit_need_with_estimate_is_not_hidden(self):
+        self.assertTrue(looks_like_need("Ориентировочно нужны 14 человек на комплектовку"))
+
+    def test_short_gender_quantity_without_question_remains_a_requirement(self):
+        self.assertTrue(looks_like_need("80 ж"))
+
+    def test_question_about_minimum_number_of_shifts_is_not_a_requirement(self):
+        self.assertFalse(looks_like_need("КМП тоже от 15 смен примем?"))
+
+    def test_explicit_need_with_shift_term_is_not_hidden(self):
+        message = "Нужны 5 комплектовщиков на вахту от 15 смен"
+        self.assertTrue(looks_like_need(message))
+
     def test_candidate_coordination_paraphrases_are_filtered(self):
         messages = [
             "Есть кандидат 49 лет, согласуете?",

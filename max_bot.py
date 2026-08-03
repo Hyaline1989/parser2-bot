@@ -201,6 +201,28 @@ def looks_like_discussion_question(text):
     lowered = text.lower()
     if "?" not in lowered:
         return False
+    direct_need_markers = [
+        "\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c",
+        "\u0437\u0430\u044f\u0432\u043a\u0430",
+        "\u043d\u0443\u0436\u043d\u044b",
+        "\u043d\u0443\u0436\u043d\u043e",
+        "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
+    ]
+    # В вопросах «от 15 смен примем?» число обозначает срок вахты,
+    # а не количество сотрудников.
+    if (
+        re.search(r"\b(?:от\s+)?\d+\s+смен\w*\b", lowered)
+        and re.search(r"\b(?:прим\w*|можно|сможем|вахт\w*)\b", lowered)
+        and not any(marker in lowered for marker in direct_need_markers)
+    ):
+        return True
+    # Короткие реплики вида «80 ж?» уточняют уже названное число,
+    # а не создают новую потребность.
+    if re.fullmatch(
+        r"\s*\d+\s*(?:[мж]|мужчин\w*|женщин\w*|человек\w*|чел\.?)?\s*\?\s*",
+        lowered,
+    ):
+        return True
     question_markers = [
         "\u044f \u043f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u043e \u043f\u043e\u043d\u0438\u043c\u0430\u044e",
         "\u043f\u0440\u0430\u0432\u0438\u043b\u044c\u043d\u043e \u043f\u043e\u043d\u0438\u043c\u0430\u044e",
@@ -231,8 +253,19 @@ def looks_like_operational_discussion(text):
         "\u043d\u0443\u0436\u043d\u044b",
         "\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f",
     ]
+    is_estimated_delivery = (
+        bool(re.search(r"\b(?:ориентировочно|примерно|порядка)\b", lowered))
+        and bool(re.search(r"\b\d+\s*(?:человек\w*|чел\b)", lowered))
+        and bool(
+            re.search(
+                r"\b(?:на\s+(?:одной|второй|следующей)\s+недел\w*|"
+                r"в\s+недел\w*|дадим|сможем\s+дать|получится\s+больше)\b",
+                lowered,
+            )
+        )
+    )
     return (
-        any(marker in lowered for marker in discussion_markers)
+        (any(marker in lowered for marker in discussion_markers) or is_estimated_delivery)
         and not any(marker in lowered for marker in direct_need_markers)
     )
 
