@@ -4,6 +4,7 @@ from max_bot import (
     looks_like_candidate_medical_issue,
     looks_like_candidate_coordination,
     looks_like_candidate_review_question,
+    looks_like_arrival_coordination,
     looks_like_need,
     looks_like_need_fulfillment_question,
     looks_like_medical_exam_notice,
@@ -194,6 +195,19 @@ class MaxBotFilterTests(unittest.TestCase):
 
     def test_arriving_group_approval_is_not_a_requirement(self):
         self.assertFalse(looks_like_need(ARRIVING_GROUP_APPROVAL_MESSAGE))
+
+    def test_housing_capacity_question_is_not_a_requirement(self):
+        message = (
+            "Коллеги, появилась возможность открыть еще комнату. "
+            "Подскажите, сможем заселить 10 человек сегодня-завтра?"
+        )
+        self.assertTrue(looks_like_arrival_coordination(message))
+        self.assertFalse(looks_like_need(message))
+
+    def test_explicit_need_with_housing_information_is_not_hidden(self):
+        message = "Нужны 10 кладовщиков, для них открыли комнату и можем заселить завтра"
+        self.assertFalse(looks_like_arrival_coordination(message))
+        self.assertTrue(looks_like_need(message))
 
     def test_real_need_with_arrival_date_is_not_hidden(self):
         message = "Нужны 3 мужчины, приезжают 03.08"
