@@ -46,6 +46,7 @@
                 saved_drafts|selectattr('status', 'equalto', 'черновик')|list|length
             ) %}
             {% set confirmed_drafts_count = saved_drafts|selectattr('status', 'equalto', 'подтверждён')|list|length %}
+            {% set published_drafts_count = saved_drafts|selectattr('status', 'equalto', 'опубликовано')|list|length %}
             <div class="main-actions">
                 {% if confirmed_drafts_count > 0 %}
                 <button class="vector-preview-button" type="button" data-action="vector-preview-confirmed">
@@ -61,6 +62,11 @@
                     Удалить черновики и требует проверки
                 </button>
                 {% endif %}
+                {% if published_drafts_count > 0 %}
+                <button class="delete-button" type="button" data-action="delete-published-drafts">
+                    Удалить опубликованное ({{ published_drafts_count }})
+                </button>
+                {% endif %}
             </div>
         </section>
 
@@ -69,6 +75,6 @@
         {% include "_saved_drafts.html" %}
         {% include "_publication_history.html" %}
     </main>
-    <script src="{{ url_for('static', filename='edit.js') }}?v=10"></script>
+    <script src="{{ url_for('static', filename='edit.js') }}?v=12"></script>
 </body>
 </html>

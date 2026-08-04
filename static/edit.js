@@ -506,6 +506,33 @@ document.addEventListener('click', async (event) => {
         return;
     }
 
+    const deletePublishedDraftsButton = event.target.closest('[data-action="delete-published-drafts"]');
+    if (deletePublishedDraftsButton) {
+        const confirmed = window.confirm(
+            'Удалить все опубликованные черновики из Parser2.0? Цифры в Векторе, история публикаций и резервные копии останутся.'
+        );
+        if (!confirmed) {
+            return;
+        }
+
+        deletePublishedDraftsButton.disabled = true;
+        deletePublishedDraftsButton.textContent = 'Удаляю опубликованное...';
+
+        try {
+            const result = await fetchJsonOrThrow('/delete-published-drafts', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+            }, 'Не удалось удалить опубликованные черновики');
+            window.alert(result.message);
+            window.location.reload();
+        } catch (error) {
+            deletePublishedDraftsButton.disabled = false;
+            deletePublishedDraftsButton.textContent = 'Удалить опубликованное';
+            alert(error.message);
+        }
+        return;
+    }
+
     const rowDeleteButton = event.target.closest('[data-action="delete-saved-row"]');
     if (rowDeleteButton) {
         const row = rowDeleteButton.closest('[data-saved-row]');

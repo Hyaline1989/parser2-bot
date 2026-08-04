@@ -128,6 +128,26 @@ def delete_working_drafts():
     )
 
 
+@app.route("/delete-published-drafts", methods=["POST"])
+def delete_published_drafts():
+    saved_drafts = load_saved_drafts()
+    kept_drafts = [
+        draft
+        for draft in saved_drafts
+        if draft.get("status", "черновик") != "опубликовано"
+    ]
+    deleted_count = len(saved_drafts) - len(kept_drafts)
+
+    write_saved_drafts(kept_drafts)
+    return jsonify(
+        {
+            "ok": True,
+            "message": f"Удалено опубликованных черновиков: {deleted_count}",
+            "deleted_count": deleted_count,
+        }
+    )
+
+
 @app.route("/vector-preview-draft", methods=["POST"])
 def vector_preview_draft():
     payload = request.get_json(silent=True) or {}
