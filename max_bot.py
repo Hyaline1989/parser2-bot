@@ -6,12 +6,12 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime
 from pathlib import Path
 
 from app import build_vector_rows, load_saved_drafts, resolve_vector_column, write_saved_drafts
 from parser import parse_messages
 from vector_catalog import OBJECT_POSITIONS, refresh_object_positions
+from time_utils import moscow_iso_now
 
 
 BOT_TOKEN = os.getenv("MAX_BOT_TOKEN")
@@ -857,7 +857,7 @@ def save_rows_from_message(chat_id, chat_title, message_id, text, rows, object_n
 
     saved_drafts.append(
         {
-            "saved_at": datetime.now().isoformat(timespec="seconds"),
+            "saved_at": moscow_iso_now(),
             "source": f"MAX: {chat_title or chat_id} #{message_id}",
             "message_key": message_key,
             "source_object": object_name,

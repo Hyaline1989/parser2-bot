@@ -2,7 +2,6 @@
 import json
 import os
 import re
-from datetime import datetime
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F, Router
@@ -11,6 +10,7 @@ from aiogram.types import Message
 
 from app import build_vector_rows, load_saved_drafts, resolve_vector_column, write_saved_drafts
 from parser import parse_messages
+from time_utils import moscow_iso_now
 from vector_catalog import OBJECT_POSITIONS
 
 
@@ -116,7 +116,7 @@ def save_rows_from_message(message, rows, object_name, status="черновик"
 
     saved_drafts.append(
         {
-            "saved_at": datetime.now().isoformat(timespec="seconds"),
+            "saved_at": moscow_iso_now(),
             "source": f"Telegram: {message.chat.title or message.chat.id} #{message.message_id}",
             "message_key": message_key,
             "source_object": object_name,

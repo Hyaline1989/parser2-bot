@@ -1,6 +1,5 @@
 ﻿import hashlib
 import json
-from datetime import datetime
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
@@ -15,6 +14,7 @@ from vector_integration import (
     publish_vector_rows,
 )
 from vector_catalog import OBJECT_POSITIONS, refresh_object_positions
+from time_utils import moscow_iso_now
 
 
 app = Flask(__name__)
@@ -69,7 +69,7 @@ def confirm_draft():
         return jsonify({"ok": False, "message": "Сначала выбери должность в строках, где указано “требует выбора”"}), 400
 
     saved_drafts[draft_index]["status"] = "подтверждён"
-    saved_drafts[draft_index]["confirmed_at"] = datetime.now().isoformat(timespec="seconds")
+    saved_drafts[draft_index]["confirmed_at"] = moscow_iso_now()
     write_saved_drafts(saved_drafts)
     return jsonify({"ok": True, "message": "Черновик подтверждён"})
 
@@ -86,7 +86,7 @@ def reject_draft():
         return jsonify({"ok": False, "message": "Черновик не найден"}), 404
 
     saved_drafts[draft_index]["status"] = "отклонён"
-    saved_drafts[draft_index]["rejected_at"] = datetime.now().isoformat(timespec="seconds")
+    saved_drafts[draft_index]["rejected_at"] = moscow_iso_now()
     write_saved_drafts(saved_drafts)
     return jsonify({"ok": True, "message": "Черновик отклонён"})
 
@@ -197,7 +197,7 @@ def publish_draft_to_vector():
     except Exception as error:
         return jsonify({"ok": False, "message": f"Ошибка публикации в Вектор: {error}"}), 500
 
-    published_at = datetime.now().isoformat(timespec="seconds")
+    published_at = moscow_iso_now()
     draft["status"] = "опубликовано"
     draft["published_at"] = published_at
     draft["vector_preview"] = preview
@@ -244,7 +244,7 @@ def publish_confirmed_to_vector():
     except Exception as error:
         return jsonify({"ok": False, "message": f"Ошибка публикации в Вектор: {error}"}), 500
 
-    published_at = datetime.now().isoformat(timespec="seconds")
+    published_at = moscow_iso_now()
     published_drafts = []
     for index, draft in confirmed:
         saved_drafts[index]["status"] = "опубликовано"
@@ -292,7 +292,7 @@ def update_saved_row():
 
     rows[row_index] = cleaned_row
     saved_drafts[draft_index]["status"] = "черновик"
-    saved_drafts[draft_index]["updated_at"] = datetime.now().isoformat(timespec="seconds")
+    saved_drafts[draft_index]["updated_at"] = moscow_iso_now()
     write_saved_drafts(saved_drafts)
     return jsonify({"ok": True, "message": "Строка сохранена", "row": cleaned_row})
 
@@ -316,7 +316,7 @@ def delete_saved_row():
     rows.pop(row_index)
     draft_removed = False
     if rows:
-        saved_drafts[draft_index]["updated_at"] = datetime.now().isoformat(timespec="seconds")
+        saved_drafts[draft_index]["updated_at"] = moscow_iso_now()
     else:
         saved_drafts.pop(draft_index)
         draft_removed = True
@@ -350,7 +350,7 @@ def save_draft():
 
     saved_drafts.append(
         {
-            "saved_at": datetime.now().isoformat(timespec="seconds"),
+            "saved_at": moscow_iso_now(),
             "source": payload.get("source", "Ручное сохранение"),
             "message_key": message_key,
             "source_object": payload.get("object", ""),
@@ -406,7 +406,7 @@ def load_publication_history():
 
 def append_publication_history(drafts, preview, mode):
     history = load_publication_history()
-    published_at = datetime.now().isoformat(timespec="seconds")
+    published_at = moscow_iso_now()
     rows = [row for draft in drafts for row in draft.get("rows", [])]
     entry = {
         "publication_id": hashlib.sha256(

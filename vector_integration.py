@@ -1,8 +1,9 @@
 import os
 import sqlite3
-from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
+
+from time_utils import moscow_backup_timestamp, moscow_today
 
 
 NUMBER_FIELDS = {
@@ -215,7 +216,7 @@ def create_vector_backup(db_path):
     configured_dir = os.getenv("VECTOR_BACKUP_DIR")
     backup_dir = Path(configured_dir) if configured_dir else Path(__file__).with_name("data") / "vector_backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    timestamp = moscow_backup_timestamp()
     backup_path = backup_dir / f"requirements_before_{timestamp}_{uuid4().hex[:8]}.db"
 
     source = sqlite3.connect(source_path)
@@ -242,7 +243,7 @@ def publish_vector_batches(row_batches, db_path=None):
     try:
         cursor = conn.cursor()
         cursor.execute("BEGIN IMMEDIATE")
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = moscow_today()
         for (object_name, position_name), values in target_values.items():
             cursor.execute(
                 """

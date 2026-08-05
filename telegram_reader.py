@@ -2,13 +2,13 @@
 import asyncio
 import json
 import os
-from datetime import datetime
 from pathlib import Path
 
 from telethon import TelegramClient
 
 from app import build_vector_rows, load_saved_drafts, write_saved_drafts
 from parser import parse_messages
+from time_utils import moscow_iso_now
 
 
 SESSION_NAME = os.getenv("TELEGRAM_SESSION", "parser2_readonly")
@@ -95,7 +95,7 @@ async def read_chats(limit, save_drafts):
                     continue
 
                 draft = {
-                    "saved_at": datetime.now().isoformat(timespec="seconds"),
+                    "saved_at": moscow_iso_now(),
                     "source": source,
                     "message_key": make_telegram_key(chat_id, message.id),
                     "source_object": object_name,
