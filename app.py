@@ -24,7 +24,8 @@ PUBLICATION_HISTORY_FILE = Path(__file__).with_name("data") / "publication_histo
 
 @app.before_request
 def refresh_vector_catalog():
-    refresh_object_positions()
+    if not app.config.get("TESTING"):
+        refresh_object_positions()
 
 
 def resolve_draft_index(payload, saved_drafts, index_field="index"):
