@@ -11,6 +11,22 @@ MESSAGE = """Потребность на 28.07
 
 
 class LinePositionTests(unittest.TestCase):
+    def test_multiple_parenthesized_positions_on_one_line(self):
+        drafts = parse_message(
+            {
+                "source": "MAX: Форум Авто",
+                "object": "Форум Авто",
+                "text": (
+                    "Актуальная потребность на 06.08\n"
+                    "Мужских - 5 (Грузчики), 10 (комплектовщики)"
+                ),
+            }
+        )
+
+        parsed = {(draft["position"], draft["gender"]): draft["quantity"] for draft in drafts}
+        self.assertEqual(parsed[("Грузчик", "мужчины")], 5)
+        self.assertEqual(parsed[("Кладовщик", "мужчины")], 10)
+
     def test_each_line_uses_its_own_position(self):
         drafts = parse_message(
             {

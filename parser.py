@@ -367,7 +367,7 @@ def parse_quantity_position_items(line):
     if not position_pattern:
         return items
 
-    pattern = rf"\b(\d+)\s*({position_pattern})\b"
+    pattern = rf"\b(\d+)\s*\(?\s*({position_pattern})\b\s*\)?"
     for match in re.finditer(pattern, lowered):
         position_hint = match.group(2)
         items.append(
