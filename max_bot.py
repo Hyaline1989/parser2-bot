@@ -639,7 +639,7 @@ def looks_like_candidate_coordination(text):
     lowered = text.lower()
     explicit_new_need = bool(
         re.search(
-            r"\b(?:\u043d\u0443\u0436\u043d\u044b|\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f)"
+            r"\b(?:\u043d\u0443\u0436\w*|\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f)"
             r"\b|\b(?:\u043f\u043e\u0442\u0440\u0435\u0431\u043d\u043e\u0441\u0442\u044c|\u0437\u0430\u044f\u0432\u043a\u0430)"
             r"\s*(?:[:=\-\u2013\u2014]\s*)?\+?\d+\b",
             lowered,
@@ -658,7 +658,7 @@ def looks_like_candidate_coordination(text):
     )
     has_coordination = bool(
         re.search(
-            r"\b(?:\u043f\u0440\u0438\u043c\w*|\u0432\u043e\u0437\u044c\u043c\w*|\u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\w*|"
+            r"\b(?:\u043f\u0440\u0438\u043c\w*|\u043f\u0440\u0438\u043d\w*|\u0432\u043e\u0437\u044c\u043c\w*|\u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\w*|"
             r"\u043d\u0430\u043f\u0440\u0430\u0432\w*|\u0441\u043e\u0433\u043b\u0430\u0441\w*|\u043e\u0442\u043f\u0440\u0430\u0432\w*)",
             lowered,
         )

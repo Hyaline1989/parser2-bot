@@ -229,6 +229,12 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_short_gender_quantity_without_question_remains_a_requirement(self):
         self.assertTrue(looks_like_need("80 ж"))
 
+    def test_specific_worker_acceptance_question_is_not_a_requirement(self):
+        self.assertFalse(looks_like_need("1 м грузчик сможем принять?"))
+
+    def test_explicit_need_with_acceptance_question_is_not_hidden(self):
+        self.assertTrue(looks_like_need("Нужен 1 м грузчик, сможете принять?"))
+
     def test_question_about_minimum_number_of_shifts_is_not_a_requirement(self):
         self.assertFalse(looks_like_need("КМП тоже от 15 смен примем?"))
 
