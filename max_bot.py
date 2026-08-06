@@ -685,6 +685,29 @@ def looks_like_candidate_coordination(text):
     )
 
 
+def looks_like_measurement_discussion(text):
+    """Отличает размеры в метрах от сокращения количества мужчин «2 м»."""
+    lowered = text.lower().replace(",", ".")
+    direct_need = bool(
+        re.search(r"\b(?:потребност\w*|заявк\w*|нуж\w*|требу\w*)\b", lowered)
+    )
+    has_measurement = bool(
+        re.search(
+            r"(?:\b\d+(?:\.\d+)?\s*(?:м\.?|метр\w*)\b|"
+            r"\bметр\w*\s*\d+(?:\.\d+)?\b)",
+            lowered,
+        )
+    )
+    has_dimension_context = bool(
+        re.search(
+            r"\b(?:шкаф\w*|дверн\w*\s+про[её]м\w*|про[её]м\w*|"
+            r"размер\w*|высот\w*|ширин\w*|длин\w*|потол\w*)\b",
+            lowered,
+        )
+    )
+    return has_measurement and has_dimension_context and not direct_need
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -708,6 +731,7 @@ def looks_like_need(text):
         or looks_like_workwear_or_safety_notice(text)
         or looks_like_medical_exam_notice(text)
         or looks_like_candidate_coordination(text)
+        or looks_like_measurement_discussion(text)
     ):
         return False
 

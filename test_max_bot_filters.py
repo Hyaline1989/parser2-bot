@@ -8,6 +8,7 @@ from max_bot import (
     looks_like_need,
     looks_like_need_fulfillment_question,
     looks_like_medical_exam_notice,
+    looks_like_measurement_discussion,
     looks_like_passport_correction,
     looks_like_training_schedule,
     looks_like_workwear_or_safety_notice,
@@ -234,6 +235,16 @@ class MaxBotFilterTests(unittest.TestCase):
 
     def test_explicit_need_with_acceptance_question_is_not_hidden(self):
         self.assertTrue(looks_like_need("Нужен 1 м грузчик, сможете принять?"))
+
+    def test_furniture_and_door_measurements_are_not_a_requirement(self):
+        message = "Точно шкаф 2 м. Дверной проём метра 2, наверное, может 2.2"
+        self.assertTrue(looks_like_measurement_discussion(message))
+        self.assertFalse(looks_like_need(message))
+
+    def test_explicit_need_with_male_abbreviation_is_not_hidden(self):
+        message = "Нужны 2 м грузчика, дверной проём два метра"
+        self.assertFalse(looks_like_measurement_discussion(message))
+        self.assertTrue(looks_like_need(message))
 
     def test_question_about_minimum_number_of_shifts_is_not_a_requirement(self):
         self.assertFalse(looks_like_need("КМП тоже от 15 смен примем?"))
