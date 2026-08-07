@@ -205,7 +205,10 @@ def parse_need_line(line, current_position):
     items = []
     line = remove_age_limits(line)
     lowered = remove_time_durations(line.lower())
-    line_position = find_position(line)
+    # Пояснения в скобках описывают условия работы и могут упоминать другие
+    # должности. Они не должны переопределять заголовок текущего раздела.
+    line_without_comments = re.sub(r"\([^)]*\)", " ", line)
+    line_position = find_position(line_without_comments)
 
     for match in re.finditer(
         r"(\d+)\s*\(?\s*(муж(?:чин(?:а|ы)?|ской|ские|ских)?|жен(?:щин(?:а|ы)?|ский|ские|ских)?)\s*\)?",
@@ -260,8 +263,13 @@ def parse_need_line(line, current_position):
             quantity = quantity_match.group(1)
             tail_start = gender_match.end() + quantity_match.end()
             tail = line[tail_start:]
+            tail_without_comments = re.sub(r"\([^)]*\)", " ", tail)
             gender, need_type = gender_and_type(gender_match.group(1))
-            position = find_position_after_quantity(tail) or line_position or current_position
+            position = (
+                find_position_after_quantity(tail_without_comments)
+                or line_position
+                or current_position
+            )
             return [
                 make_item(
                     quantity=quantity,
