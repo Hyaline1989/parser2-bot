@@ -3,6 +3,7 @@ import unittest
 from max_bot import (
     looks_like_candidate_medical_issue,
     looks_like_candidate_coordination,
+    looks_like_candidate_profile,
     looks_like_candidate_review_question,
     looks_like_arrival_coordination,
     looks_like_need,
@@ -244,6 +245,21 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_explicit_need_with_male_abbreviation_is_not_hidden(self):
         message = "Нужны 2 м грузчика, дверной проём два метра"
         self.assertFalse(looks_like_measurement_discussion(message))
+        self.assertTrue(looks_like_need(message))
+
+    def test_candidate_profile_with_shift_count_is_not_a_requirement(self):
+        message = (
+            "Гафитулин Дамир Наилевич&#x20;\n"
+            "Спормастер грузчик 15 смен&#x20;\n"
+            "Заселение 25.08\n"
+            "89852938318"
+        )
+        self.assertTrue(looks_like_candidate_profile(message))
+        self.assertFalse(looks_like_need(message))
+
+    def test_explicit_need_with_phone_and_shift_term_is_not_hidden(self):
+        message = "Нужны 5 грузчиков на 15 смен, телефон для связи 89852938318"
+        self.assertFalse(looks_like_candidate_profile(message))
         self.assertTrue(looks_like_need(message))
 
     def test_question_about_minimum_number_of_shifts_is_not_a_requirement(self):

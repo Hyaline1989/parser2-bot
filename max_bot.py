@@ -1,4 +1,5 @@
 import hashlib
+import html
 import json
 import os
 import re
@@ -708,6 +709,27 @@ def looks_like_measurement_discussion(text):
     return has_measurement and has_dimension_context and not direct_need
 
 
+def looks_like_candidate_profile(text):
+    """Отсекает анкеты уже подобранных кандидатов с телефоном и датой заселения."""
+    lowered = html.unescape(text).lower().replace("\xa0", " ")
+    direct_need = bool(
+        re.search(r"\b(?:потребност\w*|заявк\w*|нуж\w*|требу\w*)\b", lowered)
+    )
+    if direct_need:
+        return False
+
+    has_phone = bool(
+        re.search(r"(?<!\d)(?:\+?7|8)[\s()\-]*\d{3}[\s()\-]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}(?!\d)", lowered)
+    )
+    has_candidate_details = bool(
+        re.search(
+            r"\b(?:заселен\w*|заезд\w*|приезд\w*|\d+\s+смен\w*|вахт\w*)\b",
+            lowered,
+        )
+    )
+    return has_phone and has_candidate_details
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -732,6 +754,7 @@ def looks_like_need(text):
         or looks_like_medical_exam_notice(text)
         or looks_like_candidate_coordination(text)
         or looks_like_measurement_discussion(text)
+        or looks_like_candidate_profile(text)
     ):
         return False
 
