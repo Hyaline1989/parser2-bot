@@ -1,0 +1,40 @@
+import unittest
+
+from parser import parse_message
+from vector_catalog import resolve_position_for_object
+
+
+class AskonaDefaultPositionTests(unittest.TestCase):
+    def test_missing_position_defaults_to_general_worker(self):
+        drafts = parse_message(
+            {
+                "source": "MAX: АСКОНА",
+                "object": "АСКОНА",
+                "text": "Потребность 10 мужчин",
+            }
+        )
+
+        self.assertEqual(len(drafts), 1)
+        self.assertEqual(drafts[0]["position"], "Разнорабочий")
+        self.assertEqual(drafts[0]["quantity"], 10)
+        self.assertEqual(drafts[0]["citizenship"], "РФ/РБ")
+
+    def test_explicit_position_has_priority_over_default(self):
+        original_positions = list(__import__("vector_catalog").OBJECT_POSITIONS["АСКОНА"])
+        __import__("vector_catalog").OBJECT_POSITIONS["АСКОНА"] = [
+            "Разнорабочий",
+            "Упаковщик",
+        ]
+        try:
+            position, source = resolve_position_for_object(
+                "АСКОНА", "упаковщик", "мужчины"
+            )
+        finally:
+            __import__("vector_catalog").OBJECT_POSITIONS["АСКОНА"] = original_positions
+
+        self.assertEqual(position, "Упаковщик")
+        self.assertEqual(source, "найдена в сообщении")
+
+
+if __name__ == "__main__":
+    unittest.main()
