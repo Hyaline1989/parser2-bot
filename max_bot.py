@@ -811,7 +811,15 @@ def resolve_object_name(chat_id, chat_title, text):
     chat_id_key = str(chat_id) if chat_id is not None else ""
     object_from_chat = chat_objects.get(chat_id_key) or chat_objects.get(chat_title)
     if object_from_chat:
-        return object_from_chat
+        normalized_name = object_from_chat.casefold()
+        return next(
+            (
+                object_name
+                for object_name in OBJECT_POSITIONS
+                if object_name.casefold() == normalized_name
+            ),
+            object_from_chat,
+        )
 
     object_from_text = find_object_in_text(text)
     if object_from_text:

@@ -35,6 +35,21 @@ class AskonaDefaultPositionTests(unittest.TestCase):
         self.assertEqual(position, "Упаковщик")
         self.assertEqual(source, "найдена в сообщении")
 
+    def test_default_works_with_vector_object_casing_and_position_variant(self):
+        catalog = __import__("vector_catalog").OBJECT_POSITIONS
+        original = catalog.pop("АСКОНА")
+        catalog["Аскона"] = ["Разнорабочий производства", "Упаковщик"]
+        try:
+            position, source = resolve_position_for_object(
+                "Аскона", None, "мужчины"
+            )
+        finally:
+            catalog.pop("Аскона")
+            catalog["АСКОНА"] = original
+
+        self.assertEqual(position, "Разнорабочий производства")
+        self.assertEqual(source, "подставлено по правилу объекта")
+
 
 if __name__ == "__main__":
     unittest.main()

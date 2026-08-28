@@ -95,15 +95,50 @@ def find_default_position_in_message(object_name, text):
     return None
 
 
+def get_object_rule(rules, object_name, default=None):
+    """Ищет правило объекта без учёта регистра его названия."""
+    if object_name in rules:
+        return rules[object_name]
+    normalized_name = object_name.casefold()
+    for configured_name, value in rules.items():
+        if configured_name.casefold() == normalized_name:
+            return value
+    return default
+
+
+def match_catalog_position(configured_position, positions):
+    """Возвращает точное название должности из актуального справочника Вектора."""
+    normalized_position = configured_position.lower()
+    possible_matches = get_position_matches().get(
+        normalized_position, [normalized_position]
+    )
+    for position in positions:
+        if position.lower() in possible_matches:
+            return position
+    for position in positions:
+        position_lower = position.lower()
+        if any(
+            match in position_lower or position_lower in match
+            for match in possible_matches
+        ):
+            return position
+    return None
+
+
 def resolve_position_for_object(object_name, parsed_position, gender=None):
     positions = OBJECT_POSITIONS.get(object_name, [])
 
     if not parsed_position:
-        gender_defaults = DEFAULT_POSITIONS_BY_GENDER.get(object_name, {})
-        if gender in gender_defaults and gender_defaults[gender] in positions:
-            return gender_defaults[gender], "подставлено по правилу объекта и пола"
-        if object_name in DEFAULT_POSITIONS and DEFAULT_POSITIONS[object_name] in positions:
-            return DEFAULT_POSITIONS[object_name], "подставлено по правилу объекта"
+        gender_defaults = get_object_rule(DEFAULT_POSITIONS_BY_GENDER, object_name, {})
+        if gender in gender_defaults:
+            matched = match_catalog_position(gender_defaults[gender], positions)
+            if matched:
+                return matched, "подставлено по правилу объекта и пола"
+        configured_default = get_object_rule(DEFAULT_POSITIONS, object_name)
+        if configured_default:
+            matched = match_catalog_position(configured_default, positions)
+            if matched:
+                return matched, "подставлено по правилу объекта"
         if len(positions) == 1:
             return positions[0], "подставлено автоматически"
         return None, "не указана"
