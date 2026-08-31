@@ -223,6 +223,35 @@ class VectorIntegrationTests(unittest.TestCase):
         self.assertEqual(current, 9)
         self.assertEqual(daily, 9)
 
+    def test_replace_can_clear_position_missing_from_daily_plan(self):
+        conn = sqlite3.connect(self.db_path)
+        try:
+            conn.execute(
+                "DELETE FROM vacancy_positions WHERE id = 21"
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        publish_vector_rows([self.row(2)], self.db_path)
+
+        self.assertEqual(self.read_men(), {"Должность А": 2, "Новая должность": 0})
+
+    def test_positive_value_still_requires_position_in_daily_plan(self):
+        conn = sqlite3.connect(self.db_path)
+        try:
+            conn.execute(
+                "DELETE FROM vacancy_positions WHERE id = 20"
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        with self.assertRaisesRegex(Exception, "должность не найдена в дневном плане"):
+            publish_vector_rows([self.row(2)], self.db_path)
+
+        self.assertEqual(self.read_men(), {"Должность А": 5, "Новая должность": 7})
+
     def test_clear_object_does_not_require_a_position(self):
         clear_row = {
             "object": self.row(1)["object"],

@@ -278,6 +278,13 @@ def publish_vector_batches(row_batches, db_path=None):
             )
             position_row = cursor.fetchone()
             if not position_row:
+                # A position can remain in current_requirements after it has
+                # been removed from the daily-plan catalog. Full replacement
+                # must still be able to clear that stale current value. There
+                # is nothing to write to the daily plan when every target
+                # value is zero.
+                if all(value == 0 for value in values.values()):
+                    continue
                 raise VectorIntegrationError(
                     f"{object_name} / {position_name}: должность не найдена в дневном плане Вектора"
                 )
