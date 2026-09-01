@@ -5,6 +5,30 @@ from parser import parse_message
 
 
 class QuantityBeforeGenderTests(unittest.TestCase):
+    def test_gender_and_quantity_without_separator(self):
+        drafts = parse_message(
+            {
+                "source": "MAX: Агама Лешково",
+                "object": "Агама Лешково",
+                "text": (
+                    "Потребность в персонале:\n"
+                    "01.09.2026\n"
+                    "Мужчины:4\n"
+                    "Женщины5"
+                ),
+            }
+        )
+        quantities = {
+            draft["gender"]: draft["quantity"]
+            for draft in drafts
+            if isinstance(draft.get("quantity"), int)
+        }
+
+        self.assertEqual(quantities, {"мужчины": 4, "женщины": 5})
+        self.assertTrue(
+            all(draft["position"] == "Работник производства" for draft in drafts)
+        )
+
     def test_number_before_gender_words_creates_two_rows(self):
         drafts = parse_message(
             {

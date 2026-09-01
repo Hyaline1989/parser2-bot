@@ -254,11 +254,11 @@ def parse_need_line(line, current_position):
         return position_quantity_items
 
     gender_match = re.search(
-        r"\b(муж(?:ской|ские|ских|чины|чина)?|жен(?:ский|ские|ских|щины|щина)?|сем(?:ейная|ейные|ейный)?|семейные?)\b",
+        r"\b(муж(?:ской|ские|ских|чины|чина)?|жен(?:ский|ские|ских|щины|щина)?|сем(?:ейная|ейные|ейный)?|семейные?)(?![а-яё])",
         lowered,
     )
     if gender_match:
-        quantity_match = re.search(r"[-: ]\s*(\d+)(?!\d|[.:]\d)", lowered[gender_match.end() :])
+        quantity_match = re.search(r"[-:]?\s*(\d+)(?!\d|[.:]\d)", lowered[gender_match.end() :])
         if quantity_match:
             quantity = quantity_match.group(1)
             tail_start = gender_match.end() + quantity_match.end()
