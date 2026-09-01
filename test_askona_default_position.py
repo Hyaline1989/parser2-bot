@@ -50,6 +50,19 @@ class AskonaDefaultPositionTests(unittest.TestCase):
         self.assertEqual(position, "Разнорабочий производства")
         self.assertEqual(source, "подставлено по правилу объекта")
 
+    def test_default_works_when_object_is_missing_from_loaded_catalog(self):
+        catalog = __import__("vector_catalog").OBJECT_POSITIONS
+        original = catalog.pop("АСКОНА")
+        try:
+            position, source = resolve_position_for_object(
+                "АСКОНА", None, "мужчины"
+            )
+        finally:
+            catalog["АСКОНА"] = original
+
+        self.assertEqual(position, "Разнорабочий")
+        self.assertEqual(source, "подставлено по правилу объекта")
+
 
 if __name__ == "__main__":
     unittest.main()

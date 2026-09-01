@@ -88,8 +88,8 @@ def refresh_object_positions(db_path=None):
 
 def find_default_position_in_message(object_name, text):
     lowered = text.lower()
-    positions = OBJECT_POSITIONS.get(object_name, [])
-    for phrase, position in DEFAULT_POSITIONS_BY_MESSAGE.get(object_name, []):
+    positions = get_object_rule(OBJECT_POSITIONS, object_name, [])
+    for phrase, position in get_object_rule(DEFAULT_POSITIONS_BY_MESSAGE, object_name, []):
         if phrase in lowered and position in positions:
             return position
     return None
@@ -126,7 +126,7 @@ def match_catalog_position(configured_position, positions):
 
 
 def resolve_position_for_object(object_name, parsed_position, gender=None):
-    positions = OBJECT_POSITIONS.get(object_name, [])
+    positions = get_object_rule(OBJECT_POSITIONS, object_name, [])
 
     if not parsed_position:
         gender_defaults = get_object_rule(DEFAULT_POSITIONS_BY_GENDER, object_name, {})
@@ -139,6 +139,11 @@ def resolve_position_for_object(object_name, parsed_position, gender=None):
             matched = match_catalog_position(configured_default, positions)
             if matched:
                 return matched, "подставлено по правилу объекта"
+            # The configured object rule is authoritative even when the live
+            # Vector catalog is temporarily unavailable or has not yet been
+            # refreshed. Publication validation will still prevent writing to
+            # a position that truly does not exist in Vector.
+            return configured_default, "подставлено по правилу объекта"
         if len(positions) == 1:
             return positions[0], "подставлено автоматически"
         return None, "не указана"
