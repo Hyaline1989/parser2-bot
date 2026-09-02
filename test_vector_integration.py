@@ -162,6 +162,25 @@ class VectorIntegrationTests(unittest.TestCase):
         publish_vector_rows([self.row(2)], self.db_path)
         self.assertEqual(self.read_men(), {"Должность А": 2, "Новая должность": 0})
 
+    def test_object_and_position_names_are_matched_without_case(self):
+        source_row = self.row(3)
+        source_row["object"] = "тЕСТОВЫЙ ОБЪЕКТ"
+        source_row["position"] = "дОЛЖНОСТЬ а"
+
+        preview = build_vector_preview([source_row], self.db_path)
+
+        self.assertFalse(preview["errors"])
+        self.assertTrue(
+            any(
+                change["object"] == "Тестовый объект"
+                and change["position"] == "Должность А"
+                and change["new"] == 3
+                for change in preview["changes"]
+            )
+        )
+        publish_vector_rows([source_row], self.db_path)
+        self.assertEqual(self.read_men(), {"Должность А": 3, "Новая должность": 0})
+
     def test_add_keeps_other_positions(self):
         result = publish_vector_rows([self.row(3, "прибавить")], self.db_path)
         self.assertEqual(self.read_men(), {"Должность А": 8, "Новая должность": 7})

@@ -89,6 +89,15 @@ def safe_int(value):
         return 0
 
 
+def find_case_insensitive_name(name, available_names):
+    """Return the exact Vector spelling for a name differing only by case."""
+    normalized_name = name.casefold()
+    return next(
+        (candidate for candidate in available_names if candidate.casefold() == normalized_name),
+        None,
+    )
+
+
 def calculate_vector_batches(row_batches, db_path=None):
     requirements, resolved_db_path = load_vector_requirements(db_path)
     errors = []
@@ -101,15 +110,21 @@ def calculate_vector_batches(row_batches, db_path=None):
             position_name = row.get("position", "").strip()
             operation = row.get("operation") or "заменить"
 
-            if object_name not in requirements:
+            vector_object_name = find_case_insensitive_name(object_name, requirements)
+            if not vector_object_name:
                 errors.append(f"{object_name}: объект не найден в Векторе")
                 continue
+            object_name = vector_object_name
             if operation == "обнулить":
                 valid_rows.append((row, object_name, position_name, operation))
                 continue
-            if position_name not in requirements[object_name]["positions"]:
+            vector_position_name = find_case_insensitive_name(
+                position_name, requirements[object_name]["positions"]
+            )
+            if not vector_position_name:
                 errors.append(f"{object_name} / {position_name}: должность не найдена в Векторе")
                 continue
+            position_name = vector_position_name
 
             valid_rows.append((row, object_name, position_name, operation))
         valid_batches.append(valid_rows)
