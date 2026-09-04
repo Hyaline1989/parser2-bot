@@ -322,6 +322,10 @@ small {
     background: var(--ready);
 }
 
+.not-need-button {
+    background: #7c3aed;
+}
+
 .muted-button {
     background: #e5e7eb;
     color: var(--text);

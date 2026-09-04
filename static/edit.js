@@ -177,6 +177,7 @@ function updateDraftActionsAfterStatus(button, newStatusText) {
     const status = draft.querySelector('[data-draft-status]');
     const actions = button.closest('.saved-actions');
     const deleteButton = actions.querySelector('[data-action="delete-draft"]');
+    const notNeedButton = actions.querySelector('[data-action="mark-not-need"]');
     status.textContent = newStatusText;
     actions.textContent = newStatusText === 'отклонён' ? 'Отклонён' : 'Подтверждён';
     if (newStatusText === 'подтверждён') {
@@ -200,6 +201,10 @@ function updateDraftActionsAfterStatus(button, newStatusText) {
     if (deleteButton) {
         actions.append(' ');
         actions.append(deleteButton);
+    }
+    if (notNeedButton) {
+        actions.insertBefore(document.createTextNode(' '), deleteButton || null);
+        actions.insertBefore(notNeedButton, deleteButton || null);
     }
 }
 
@@ -341,6 +346,34 @@ document.querySelectorAll('[data-action="reject-draft"]').forEach((button) => {
 });
 
 document.addEventListener('click', async (event) => {
+    const notNeedButton = event.target.closest('[data-action="mark-not-need"]');
+    if (notNeedButton) {
+        const draft = notNeedButton.closest('[data-saved-draft]');
+        const confirmed = window.confirm(
+            'Отметить сообщение как «Это не потребность»? Черновик исчезнет, а исходный текст сохранится для улучшения парсера.'
+        );
+        if (!confirmed) {
+            return;
+        }
+
+        notNeedButton.disabled = true;
+        notNeedButton.textContent = 'Сохраняю пример...';
+        try {
+            const result = await fetchJsonOrThrow('/mark-not-need', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(getDraftReference(draft)),
+            }, 'Не удалось сохранить пример');
+            draft.remove();
+            window.alert(result.message);
+        } catch (error) {
+            notNeedButton.disabled = false;
+            notNeedButton.textContent = 'Это не потребность';
+            window.alert(error.message);
+        }
+        return;
+    }
+
     const bulkPreviewButton = event.target.closest('[data-action="vector-preview-confirmed"]');
     if (bulkPreviewButton) {
         const previewBox = document.querySelector('[data-bulk-vector-preview]');

@@ -27,6 +27,9 @@
                     {% elif draft.status == 'отклонён' %}
                     <span class="rejected-note">Отклонён {{ draft.rejected_at }}</span>
                     {% endif %}
+                    {% if draft.status != 'опубликовано' %}
+                    <button class="small-button not-need-button" type="button" data-action="mark-not-need">Это не потребность</button>
+                    {% endif %}
                     <button class="small-button delete-button" type="button" data-action="delete-draft">Удалить черновик</button>
                 </span>
             </div>

@@ -20,6 +20,7 @@ from time_utils import moscow_iso_now
 app = Flask(__name__)
 DRAFTS_FILE = Path(__file__).with_name("drafts.json")
 PUBLICATION_HISTORY_FILE = Path(__file__).with_name("data") / "publication_history.json"
+NOT_NEED_EXAMPLES_FILE = Path(__file__).with_name("data") / "not_need_examples.json"
 
 
 @app.before_request
@@ -106,6 +107,31 @@ def delete_draft():
     saved_drafts.pop(draft_index)
     write_saved_drafts(saved_drafts)
     return jsonify({"ok": True, "message": "Черновик удалён"})
+
+
+@app.route("/mark-not-need", methods=["POST"])
+def mark_not_need():
+    payload = request.get_json(silent=True) or {}
+    saved_drafts = load_saved_drafts()
+    draft_index = resolve_draft_index(payload, saved_drafts)
+
+    if draft_index is None or not isinstance(draft_index, int):
+        return jsonify({"ok": False, "message": "Не найден номер черновика"}), 400
+    if draft_index < 0 or draft_index >= len(saved_drafts):
+        return jsonify({"ok": False, "message": "Черновик не найден"}), 404
+
+    draft = saved_drafts[draft_index]
+    if draft.get("status") == "опубликовано":
+        return jsonify(
+            {"ok": False, "message": "Опубликованный черновик нельзя отметить как ошибочный"}
+        ), 400
+
+    append_not_need_example(draft)
+    saved_drafts.pop(draft_index)
+    write_saved_drafts(saved_drafts)
+    return jsonify(
+        {"ok": True, "message": "Сообщение сохранено как пример: это не потребность"}
+    )
 
 
 @app.route("/delete-working-drafts", methods=["POST"])
@@ -403,6 +429,35 @@ def load_publication_history():
     except (json.JSONDecodeError, OSError):
         return []
     return sorted(history, key=lambda entry: entry.get("published_at", ""), reverse=True)
+
+
+def load_not_need_examples():
+    if not NOT_NEED_EXAMPLES_FILE.exists():
+        return []
+    try:
+        return json.loads(NOT_NEED_EXAMPLES_FILE.read_text(encoding="utf-8-sig"))
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def append_not_need_example(draft):
+    examples = load_not_need_examples()
+    examples.insert(
+        0,
+        {
+            "marked_at": moscow_iso_now(),
+            "message_key": draft.get("message_key", ""),
+            "source": draft.get("source", ""),
+            "source_object": draft.get("source_object", ""),
+            "message": draft.get("max", {}).get("text", ""),
+            "rows": draft.get("rows", []),
+        },
+    )
+    NOT_NEED_EXAMPLES_FILE.parent.mkdir(parents=True, exist_ok=True)
+    NOT_NEED_EXAMPLES_FILE.write_text(
+        json.dumps(examples[:5000], ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
 
 def append_publication_history(drafts, preview, mode):
