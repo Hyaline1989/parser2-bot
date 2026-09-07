@@ -53,6 +53,9 @@ DEFAULT_POSITIONS_BY_MESSAGE = {
 }
 
 POSITION_OVERRIDES_BY_OBJECT = {
+    "КуулКлевер": {
+        "пекарня": "Работник склада",
+    },
     "СДТ": {
         "копакинг": "Разнорабочий",
         "оператор": "Разнорабочий",
@@ -152,7 +155,7 @@ def resolve_position_for_object(object_name, parsed_position, gender=None):
         return parsed_position, "нет объекта в справочнике"
 
     normalized_position = parsed_position.lower()
-    object_overrides = POSITION_OVERRIDES_BY_OBJECT.get(object_name, {})
+    object_overrides = get_object_rule(POSITION_OVERRIDES_BY_OBJECT, object_name, {})
     if normalized_position in object_overrides and object_overrides[normalized_position] in positions:
         return object_overrides[normalized_position], "подставлено по правилу объекта"
 

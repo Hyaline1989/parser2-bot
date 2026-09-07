@@ -12,8 +12,31 @@ MESSAGE = """ПОТРЕБНОСТЬ В ПЕРСОНАЛЕ
 • 1 мужчина. (с 19.00 до 7.00)-замесы сырников.
 • 1 мужчина. (с 7.00 до 19.00)-замес блинов."""
 
+KOOlKLEVER_WITH_NONZERO_BAKERY = """ПОТРЕБНОСТЬ В ПЕРСОНАЛЕ
+• мужских: 3 ПЕКАРНЯ!!! (всё что связано с тестом и выпечкой)
+• женских: 0 (пекарня, всё что связано с тестом и выпечкой)
+• женских: 4 (день/ночь), (холодное производство)
+• 0 женщины. (с 7.00 до 19.00)-салаты, сэндвичи.
+• 2 мужчина. (с 7:00 до 19:00)-соусный цех. Приготовление фарша.
+• 1 мужчина. (с 19:00 до 07:00)-супы и вторые блюда"""
+
 
 class ObjectCitizenshipTests(unittest.TestCase):
+    def test_koolklever_bakery_section_maps_to_default_vector_position(self):
+        drafts = parse_message(
+            {
+                "source": "MAX: КуулКлевер",
+                "object": "КуулКлевер",
+                "text": KOOlKLEVER_WITH_NONZERO_BAKERY,
+            }
+        )
+        rows = build_vector_rows(drafts)
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["position"], "Работник склада")
+        self.assertEqual(rows[0]["cis_m"], 6)
+        self.assertEqual(rows[0]["cis_f"], 4)
+
     def test_koolklever_defaults_to_cis(self):
         drafts = parse_message(
             {
