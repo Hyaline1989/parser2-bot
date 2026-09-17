@@ -13,6 +13,7 @@ POSITION_GENDER_DEFAULTS = get_position_gender_defaults()
 ALL_POSITIONS = "Все должности"
 DEFAULT_CITIZENSHIP_BY_OBJECT = {
     "Клинский мясокомбинат": "СНГ",
+    "Креветки Клинский": "СНГ",
     "КуулКлевер": "СНГ",
 }
 

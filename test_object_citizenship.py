@@ -81,6 +81,39 @@ class ObjectCitizenshipTests(unittest.TestCase):
         self.assertEqual(rows[0]["rf_rb_m"], 0)
         self.assertEqual(rows[0]["rf_rb_f"], 0)
 
+    def test_klinsky_shrimps_defaults_to_cis(self):
+        drafts = parse_message(
+            {
+                "source": "MAX: Креветки Клинский",
+                "object": "Креветки Клинский",
+                "text": "Коллеги, заявка\n10м\n10ж",
+            }
+        )
+        rows = build_vector_rows(drafts)
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["position"], "Упаковщик")
+        self.assertEqual(rows[0]["cis_m"], 10)
+        self.assertEqual(rows[0]["cis_f"], 10)
+        self.assertEqual(rows[0]["rf_rb_m"], 0)
+        self.assertEqual(rows[0]["rf_rb_f"], 0)
+
+    def test_explicit_rf_rb_overrides_klinsky_shrimps_default(self):
+        drafts = parse_message(
+            {
+                "source": "MAX: Креветки Клинский",
+                "object": "Креветки Клинский",
+                "text": "Коллеги, заявка\nРФ/РБ\n10м\n10ж",
+            }
+        )
+        rows = build_vector_rows(drafts)
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["rf_rb_m"], 10)
+        self.assertEqual(rows[0]["rf_rb_f"], 10)
+        self.assertEqual(rows[0]["cis_m"], 0)
+        self.assertEqual(rows[0]["cis_f"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
