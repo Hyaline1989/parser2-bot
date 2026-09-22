@@ -517,6 +517,11 @@ def looks_like_candidate_review_question(text):
         "\u043c\u043e\u0436\u0435\u043c \u043d\u0430\u043f\u0440\u0430\u0432\u0438\u0442\u044c",
         "\u043c\u043e\u0436\u043d\u043e \u043d\u0430\u043f\u0440\u0430\u0432\u0438\u0442\u044c",
         "\u0441\u043c\u043e\u0436\u0435\u043c \u043d\u0430\u043f\u0440\u0430\u0432\u0438\u0442\u044c",
+        "сможем взять",
+        "можем взять",
+        "можно взять",
+        "возьмём",
+        "возьмем",
         "\u0432\u043e\u0437\u044c\u043c\u0451\u0442\u0435",
         "\u0432\u043e\u0437\u044c\u043c\u0435\u0442\u0435",
         "\u043f\u0440\u0438\u043c\u0435\u0442\u0435",
@@ -537,10 +542,17 @@ def looks_like_candidate_review_question(text):
         or "\u0432\u043e\u0437\u0440\u0430\u0441\u0442" in lowered
         or "\u043f\u043e \u0432\u043e\u0437\u0440\u0430\u0441\u0442\u0443" in lowered
     )
+    has_size_context = bool(
+        re.search(r"\b\d{1,3}\s*(?:размер\w*|р[.-]?р)\b", lowered)
+    )
     has_review_wording = any(marker in lowered for marker in review_markers)
     return (
         ("?" in lowered or has_review_wording)
-        and (has_age_context or (has_person_number and has_review_wording))
+        and (
+            has_age_context
+            or has_size_context
+            or (has_person_number and has_review_wording)
+        )
         and any(marker in lowered for marker in candidate_markers)
         and not any(marker in lowered for marker in direct_need_markers)
     )

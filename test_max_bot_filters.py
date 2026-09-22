@@ -133,6 +133,18 @@ class MaxBotFilterTests(unittest.TestCase):
         )
         self.assertFalse(looks_like_need(CANDIDATE_SIZE_AND_AGE_MESSAGE))
 
+    def test_candidate_clothing_size_question_is_not_a_requirement(self):
+        message = "Сергей Ёлчин кандидат женщина 58 размер - сможем взять?"
+
+        self.assertTrue(looks_like_candidate_review_question(message))
+        self.assertFalse(looks_like_need(message))
+
+    def test_real_requirement_with_clothing_size_is_not_hidden(self):
+        message = "Нужны 5 женщин 58 размера"
+
+        self.assertFalse(looks_like_candidate_review_question(message))
+        self.assertTrue(looks_like_need(message))
+
     def test_real_requirement_with_age_limit_is_not_hidden(self):
         message = "Нужны 3 женщины до 56 лет"
         self.assertFalse(looks_like_candidate_review_question(message))
