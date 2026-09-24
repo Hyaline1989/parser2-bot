@@ -21,12 +21,11 @@ DEFAULT_CITIZENSHIP_BY_OBJECT = {
 def is_zero_requirement(text):
     """Распознаёт только явную команду обнулить потребность объекта."""
     lowered = clean_text(text).lower()
-    patterns = [
-        r"\bпотребност\w*\s*(?:[:=\-–—]\s*)?0\b",
+    clear_command_patterns = [
         r"\bпотребност(?:ь|и)\s+(?:больше\s+)?нет\b",
         r"\bобнул(?:ить|ите|яем|яется)\s+потребност\w*\b",
     ]
-    if any(re.search(pattern, lowered) for pattern in patterns):
+    if any(re.search(pattern, lowered) for pattern in clear_command_patterns):
         return True
 
     # Полная таблица потребности, где все кадровые категории равны нулю.
@@ -34,19 +33,24 @@ def is_zero_requirement(text):
     if "потребност" not in lowered:
         return False
     gender_then_quantity = re.findall(
-        r"\b(?:мужск\w*|женск\w*|мужчин\w*|женщин\w*|семейн\w*)"
+        r"\b(?:мужск\w*|женск\w*|мужчин\w*|женщин\w*|муж|жен|семейн\w*)"
         r"\s*[:=\-–—]?\s*(\d+)(?!\d)",
         lowered,
     )
     quantity_then_gender = re.findall(
-        r"\b(\d+)\s*(?:мужск\w*|женск\w*|мужчин\w*|женщин\w*|семейн\w*)\b",
+        r"\b(\d+)\s*(?:мужск\w*|женск\w*|мужчин\w*|женщин\w*|муж|жен|семейн\w*)\b",
         lowered,
     )
     staffing_quantities = [
         int(value)
         for value in gender_then_quantity + quantity_then_gender
     ]
-    return bool(staffing_quantities) and all(value == 0 for value in staffing_quantities)
+    if staffing_quantities:
+        return all(value == 0 for value in staffing_quantities)
+
+    return bool(
+        re.search(r"\bпотребност\w*\s*(?:[:=\-–—]\s*)?0\b", lowered)
+    )
 
 
 def parse_messages(messages):

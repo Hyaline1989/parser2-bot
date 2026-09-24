@@ -64,6 +64,24 @@ class ZeroRequirementTests(unittest.TestCase):
 женских: 5"""
         self.assertFalse(is_zero_requirement(message))
 
+    def test_mixed_zero_and_positive_on_one_line_is_not_clear(self):
+        message = "Потребность 0 муж/5 жен"
+
+        self.assertFalse(is_zero_requirement(message))
+        drafts = parse_message(
+            {
+                "source": "MAX: Креветки Клинский",
+                "object": "Креветки Клинский",
+                "text": message,
+            }
+        )
+
+        self.assertEqual(len(drafts), 1)
+        self.assertEqual(drafts[0]["gender"], "женщины")
+        self.assertEqual(drafts[0]["quantity"], 5)
+        self.assertEqual(drafts[0]["citizenship"], "СНГ")
+        self.assertNotEqual(drafts[0]["position"], ALL_POSITIONS)
+
     def test_quantities_joined_to_positions_are_not_mistaken_for_all_zero(self):
         message = """ПОТРЕБНОСТЬ В ПЕРСОНАЛЕ:
 На 01.08.2026
