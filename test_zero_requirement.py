@@ -82,6 +82,38 @@ class ZeroRequirementTests(unittest.TestCase):
         self.assertEqual(drafts[0]["citizenship"], "СНГ")
         self.assertNotEqual(drafts[0]["position"], ALL_POSITIONS)
 
+    def test_positive_position_row_prevents_clear_object(self):
+        message = """КОРРЕКТИРОВКА
+ПОТРЕБНОСТЬ НА 24.09
+• Мужских - 0
+• Женских - 0
+        • Сан служба - 1"""
+
+        self.assertFalse(is_zero_requirement(message))
+        catalog = __import__("vector_catalog").OBJECT_POSITIONS
+        original_positions = catalog.get("ФитнесШок")
+        catalog["ФитнесШок"] = ["Уборщик", "Упаковщик"]
+        try:
+            drafts = parse_message(
+                {
+                    "source": "MAX: ФитнесШок",
+                    "object": "ФитнесШок",
+                    "text": message,
+                }
+            )
+            rows = build_vector_rows(drafts)
+        finally:
+            if original_positions is None:
+                catalog.pop("ФитнесШок", None)
+            else:
+                catalog["ФитнесШок"] = original_positions
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["position"], "Уборщик")
+        self.assertEqual(rows[0]["rf_rb_m"], 0)
+        self.assertEqual(rows[0]["rf_rb_f"], 1)
+        self.assertEqual(rows[0]["total"], 1)
+
     def test_quantities_joined_to_positions_are_not_mistaken_for_all_zero(self):
         message = """ПОТРЕБНОСТЬ В ПЕРСОНАЛЕ:
 На 01.08.2026

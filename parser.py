@@ -45,6 +45,13 @@ def is_zero_requirement(text):
         int(value)
         for value in gender_then_quantity + quantity_then_gender
     ]
+    for raw_line in lowered.splitlines():
+        line = clean_line(raw_line)
+        position_items = (
+            parse_position_quantity_items(line)
+            + parse_quantity_position_items(line)
+        )
+        staffing_quantities.extend(item["quantity"] for item in position_items)
     if staffing_quantities:
         return all(value == 0 for value in staffing_quantities)
 
