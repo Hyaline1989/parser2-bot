@@ -742,6 +742,24 @@ def looks_like_candidate_profile(text):
     return has_phone and has_candidate_details
 
 
+def looks_like_housing_history(text):
+    lowered = text.lower()
+    direct_need = re.search(
+        r"\b(?:потребност\w*|заявк\w*|нуж\w*|требу\w*)\b",
+        lowered,
+    )
+    past_residence = re.search(
+        r"\b(?:жил(?:а|и)?|проживал\w*|размещал\w*|заселял\w*)\b",
+        lowered,
+    )
+    no_complaints = re.search(
+        r"\b(?:жалоб|нарекани\w*|проблем\w*)\s+не\s+было\b"
+        r"|\bбез\s+(?:жалоб|нареканий|проблем)\b",
+        lowered,
+    )
+    return bool(past_residence and no_complaints and not direct_need)
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -757,6 +775,7 @@ def looks_like_need(text):
         or looks_like_age_limit_only(text)
         or looks_like_transfer_discussion(text)
         or looks_like_arrival_coordination(text)
+        or looks_like_housing_history(text)
         or looks_like_training_schedule(text)
         or looks_like_candidate_medical_issue(text)
         or looks_like_passport_correction(text)
