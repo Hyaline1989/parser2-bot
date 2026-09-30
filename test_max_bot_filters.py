@@ -281,6 +281,24 @@ class MaxBotFilterTests(unittest.TestCase):
         message = "Нужны 5 комплектовщиков на вахту от 15 смен"
         self.assertTrue(looks_like_need(message))
 
+    def test_already_directed_worker_and_shift_instructions_are_not_a_requirement(self):
+        message = (
+            "Коллеги, добрый день.\n"
+            "На 01.10., направлен комплектовщик Шабанов Денис на 21 смену.\n"
+            "В потребности мужчины указаны только грузчики! "
+            "Грузчиков направляйте на 35 смен пожалуйста.\n"
+            "Ксения Смирнова"
+        )
+
+        self.assertTrue(looks_like_candidate_coordination(message))
+        self.assertFalse(looks_like_need(message))
+
+    def test_explicit_need_with_direction_and_shift_term_is_not_hidden(self):
+        message = "Нужны 5 грузчиков, направляйте на 35 смен"
+
+        self.assertFalse(looks_like_candidate_coordination(message))
+        self.assertTrue(looks_like_need(message))
+
     def test_candidate_coordination_paraphrases_are_filtered(self):
         messages = [
             "Есть кандидат 49 лет, согласуете?",
