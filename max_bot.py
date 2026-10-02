@@ -145,6 +145,24 @@ def looks_like_arrival_notice(text):
     return has_duration and any(marker in lowered for marker in arrival_markers)
 
 
+def looks_like_arrival_count_status(text):
+    """Отсекает сверку уже направленных людей на заезд или заселение."""
+    lowered = text.lower()
+    direct_need = re.search(
+        r"\b(?:потребност\w*|заявк\w*|нуж\w*|требу\w*)\b",
+        lowered,
+    )
+    has_arrival = re.search(
+        r"\b(?:заселен\w*|заезд\w*|приезд\w*|доезд\w*)\b",
+        lowered,
+    )
+    has_status_context = (
+        re.search(r"\b(?:срм|crm)\b", lowered)
+        or re.search(r"\bсколько\s+(?:людей|человек)\s+будет\b", lowered)
+    )
+    return bool(has_arrival and has_status_context and not direct_need)
+
+
 def looks_like_candidate_travel(text):
     lowered = text.lower()
     ticket_markers = [
@@ -766,6 +784,7 @@ def looks_like_need(text):
         or looks_like_place_question(text)
         or looks_like_trip_details(text)
         or looks_like_arrival_notice(text)
+        or looks_like_arrival_count_status(text)
         or looks_like_candidate_travel(text)
         or looks_like_candidate_arrival(text)
         or looks_like_discussion_question(text)

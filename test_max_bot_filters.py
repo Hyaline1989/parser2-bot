@@ -5,6 +5,7 @@ from max_bot import (
     looks_like_candidate_coordination,
     looks_like_candidate_profile,
     looks_like_candidate_review_question,
+    looks_like_arrival_count_status,
     looks_like_arrival_coordination,
     looks_like_housing_history,
     looks_like_need,
@@ -218,6 +219,16 @@ class MaxBotFilterTests(unittest.TestCase):
         )
         self.assertTrue(looks_like_arrival_coordination(message))
         self.assertFalse(looks_like_need(message))
+
+    def test_crm_arrival_count_is_not_a_requirement(self):
+        message = "Сегодня сколько людей будет? В срм аж 11 чел на заселение сегодня"
+        self.assertTrue(looks_like_arrival_count_status(message))
+        self.assertFalse(looks_like_need(message))
+
+    def test_explicit_need_for_arrival_is_not_hidden(self):
+        message = "Нужны 11 человек на заселение сегодня"
+        self.assertFalse(looks_like_arrival_count_status(message))
+        self.assertTrue(looks_like_need(message))
 
     def test_explicit_need_with_housing_information_is_not_hidden(self):
         message = "Нужны 10 кладовщиков, для них открыли комнату и можем заселить завтра"
