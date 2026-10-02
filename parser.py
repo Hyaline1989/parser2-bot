@@ -257,6 +257,23 @@ def parse_need_line(line, current_position):
     if items:
         return items
 
+    # В строках вида "Семейная: 3 (кмп+кмп, кмп+грузчик)" слова в скобках
+    # поясняют состав пар. Число перед первым "кмп" не является количеством
+    # мужчин-комплектовщиков.
+    family_match = re.search(
+        r"\bсем(?:ейная|ейные|ейный|ейные пары?)?\s*[-:]?\s*(\d+)(?!\d)",
+        lowered,
+    )
+    if family_match:
+        return [
+            make_item(
+                quantity=family_match.group(1),
+                gender="семейные",
+                position=line_position or current_position,
+                need_type="семейная",
+            )
+        ]
+
     quantity_position_items = parse_quantity_position_items(line)
     if quantity_position_items:
         return quantity_position_items

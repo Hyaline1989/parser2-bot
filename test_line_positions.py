@@ -11,6 +11,29 @@ MESSAGE = """Потребность на 28.07
 
 
 class LinePositionTests(unittest.TestCase):
+    def test_major_family_count_is_not_added_to_male_assemblers(self):
+        drafts = parse_message(
+            {
+                "source": "MAX: Мейджер",
+                "object": "Major",
+                "text": (
+                    "ПОТРЕБНОСТЬ В ПЕРСОНАЛЕ:\n"
+                    "На 02.10.2026\n"
+                    "мужских: 3кмп\n"
+                    "мужских: 2грузчик\n"
+                    "женских: 5кмп\n"
+                    "женских: 0стик\n"
+                    "Семейная: 3 (кмп+кмп, кмп+грузчик)"
+                ),
+            }
+        )
+
+        rows = {row["position"]: row for row in build_vector_rows(drafts)}
+        self.assertEqual(rows["Комплектовщик"]["rf_rb_m"], 3)
+        self.assertEqual(rows["Комплектовщик"]["rf_rb_f"], 5)
+        self.assertEqual(rows["Комплектовщик"]["rf_rb_family"], 3)
+        self.assertEqual(rows["Работник склада"]["rf_rb_m"], 2)
+
     def test_multiple_parenthesized_positions_on_one_line(self):
         drafts = parse_message(
             {
