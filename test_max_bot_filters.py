@@ -240,6 +240,14 @@ class MaxBotFilterTests(unittest.TestCase):
         self.assertTrue(looks_like_housing_history(message))
         self.assertFalse(looks_like_need(message))
 
+    def test_candidate_pay_comment_is_not_a_requirement(self):
+        self.assertFalse(looks_like_need(
+            "По обстановке в квартире не похоже что эта женщина нуждается в вахте за 3500🤪"
+        ))
+
+    def test_real_need_with_pay_is_preserved(self):
+        self.assertTrue(looks_like_need("Нужны 5 женщин на вахту за 3500"))
+
     def test_explicit_need_with_housing_history_is_not_hidden(self):
         message = "Нужны 4 женщины и 4 мужчины. Ранее сотрудники жили без жалоб."
         self.assertFalse(looks_like_housing_history(message))

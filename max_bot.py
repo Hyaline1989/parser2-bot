@@ -778,6 +778,22 @@ def looks_like_housing_history(text):
     return bool(past_residence and no_complaints and not direct_need)
 
 
+def looks_like_pay_discussion(text):
+    """Суммы оплаты без отдельного количества работников не являются заявкой."""
+    lowered = text.lower()
+    without_pay = re.sub(
+        r"\bза\s+\d+(?:[ .,]\d{3})*(?:\s*(?:руб\w*|р\.?|₽))?"
+        r"|\b\d+(?:[ .,]\d{3})*\s*(?:руб\w*|₽|р\s*/\s*ч)\b",
+        " ",
+        lowered,
+    )
+    explicit_need = re.search(
+        r"\b(?:потребност\w*|заявк\w*|нужны|нужен|нужна|нужно|требуются)\b",
+        lowered,
+    )
+    return without_pay != lowered and not re.search(r"\d", without_pay) and not explicit_need
+
+
 def looks_like_need(text):
     if (
         looks_like_shift_report(text)
@@ -805,6 +821,7 @@ def looks_like_need(text):
         or looks_like_candidate_coordination(text)
         or looks_like_measurement_discussion(text)
         or looks_like_candidate_profile(text)
+        or looks_like_pay_discussion(text)
     ):
         return False
 
