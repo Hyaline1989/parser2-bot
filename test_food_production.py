@@ -1,6 +1,7 @@
 import unittest
 
 from parser import parse_message
+from app import build_vector_rows
 
 
 MESSAGE = """12.10.2026
@@ -21,19 +22,21 @@ MESSAGE = """12.10.2026
 class FoodProductionTests(unittest.TestCase):
     def test_all_counts_and_tasks_are_preserved(self):
         drafts = parse_message({"object": "КуулКлевер", "text": MESSAGE})
-        parsed = {(d["position"], d["gender"]): d["quantity"] for d in drafts}
-        self.assertEqual(parsed, {
-            ("Подготовитель пищевого сырья", "женщины"): 2,
-            ("Подготовитель пищевого сырья", "мужчины"): 2,
-            ("Упаковщик", "женщины"): 1,
-            ("Оператор в соусный цех", "мужчины"): 2,
-            ("Приготовление фарша", "мужчины"): 1,
-            ("Транспортировщик", "мужчины"): 2,
-            ("Оператор блинного аппарата", "женщины"): 1,
-        })
+        rows = {r["position"]: r for r in build_vector_rows(drafts)}
+        self.assertEqual(set(rows), {"Работник производства", "Упаковщик"})
+        self.assertEqual(rows["Работник производства"]["cis_m"], 7)
+        self.assertEqual(rows["Работник производства"]["cis_f"], 3)
+        self.assertEqual(rows["Упаковщик"]["cis_f"], 1)
         self.assertTrue(all(d["citizenship"] == "СНГ" for d in drafts))
-        self.assertTrue(all(d["status"] == "требует проверки"
-                            for d in drafts if d["position"] != "Упаковщик"))
+        self.assertTrue(all(d["status"] == "готово к проверке" for d in drafts))
+
+    def test_loaders_remain_separate_from_other_tasks(self):
+        drafts = parse_message({"object": "КуулКлевер", "text":
+            "Потребность\nмужских: 2 грузчик\nженщины: 1 упаковка\nмужских: 3 оператор"})
+        rows = {r["position"]: r for r in build_vector_rows(drafts)}
+        self.assertEqual(rows["Работник склада"]["cis_m"], 2)
+        self.assertEqual(rows["Упаковщик"]["cis_f"], 1)
+        self.assertEqual(rows["Работник производства"]["cis_m"], 3)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ OBJECT_POSITIONS = {
     "Индейка Калуга": ["Работник производства", "Уборщик", "Упаковщик"],
     "Клинский мясокомбинат": ["Работник производства", "Ремонтные работы", "Уборщик", "Упаковщик"],
     "Креветки Клинский": ["Упаковщик"],
-    "КуулКлевер": ["Работник склада", "Упаковщик"],
+    "КуулКлевер": ["Работник склада", "Упаковщик", "Работник производства"],
     "Мармеладыч": ["Упаковщик"],
     "Мираторг": ["Работник производства", "Разнорабочий"],
     "Мираторг Тула": ["Работник производства"],
@@ -35,7 +35,7 @@ DEFAULT_POSITIONS = {
     "Клинский мясокомбинат": "Работник производства",
     "ФитнесШок": "Упаковщик",
     "Индейка Калуга": "Работник производства",
-    "КуулКлевер": "Работник склада",
+    "КуулКлевер": "Работник производства",
     "Форум Авто": "Кладовщик",
 }
 
@@ -130,6 +130,19 @@ def match_catalog_position(configured_position, positions):
 
 def resolve_position_for_object(object_name, parsed_position, gender=None):
     positions = get_object_rule(OBJECT_POSITIONS, object_name, [])
+
+    if object_name.casefold() == "куулклевер":
+        role = (parsed_position or "").casefold()
+        if "упаков" in role:
+            configured = "Упаковщик"
+        elif "грузчик" in role or role == "работник склада":
+            configured = "Работник склада"
+        else:
+            configured = "Работник производства"
+        return (
+            match_catalog_position(configured, positions) or configured,
+            "подставлено по правилу объекта",
+        )
 
     if not parsed_position:
         gender_defaults = get_object_rule(DEFAULT_POSITIONS_BY_GENDER, object_name, {})

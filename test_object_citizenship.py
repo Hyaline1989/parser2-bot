@@ -33,13 +33,9 @@ class ObjectCitizenshipTests(unittest.TestCase):
         rows = build_vector_rows(drafts)
 
         self.assertEqual(len(rows), 1)
-        self.assertEqual(rows[0]["position"], "Работник склада")
-        self.assertEqual(rows[0]["cis_m"], 4)
+        self.assertEqual(rows[0]["position"], "Работник производства")
+        self.assertEqual(rows[0]["cis_m"], 6)
         self.assertEqual(rows[0]["cis_f"], 4)
-        food_tasks = [d for d in drafts if d["position"] == "Приготовление фарша"]
-        self.assertEqual(len(food_tasks), 1)
-        self.assertEqual(food_tasks[0]["quantity"], 2)
-        self.assertEqual(food_tasks[0]["status"], "требует проверки")
 
     def test_koolklever_defaults_to_cis(self):
         drafts = parse_message(
