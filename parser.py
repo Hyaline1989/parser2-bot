@@ -113,7 +113,16 @@ def parse_message(message):
             continue
 
         line_position = find_position(line)
-        for item in parse_need_line(line, current_position):
+        line_items = parse_need_line(line, current_position)
+        task_position = None
+        # В заявках КуулКлевера конкретная работа указана и в скобках,
+        # и после времени смены. Сохраняем её для проверки по каталогу.
+        if object_name.casefold() == "куулклевер":
+            task_position = find_food_production_position(line)
+            if task_position:
+                for item in line_items:
+                    item["position"] = task_position
+        for item in line_items:
             if item["quantity"] == 0:
                 continue
 
@@ -127,7 +136,7 @@ def parse_message(message):
                 item["position"] = family_fallback_position
 
             parsed_position = item["position"] or current_position
-            if item["position"]:
+            if item["position"] and not task_position:
                 current_position = item["position"]
             position, position_source = resolve_position_for_object(
                 object_name, parsed_position, item["gender"]
@@ -213,6 +222,22 @@ def remove_redundant_aggregate_totals(drafts):
     return [draft for draft in drafts if id(draft) not in redundant_ids]
 
 
+def find_food_production_position(line):
+    lowered = line.lower()
+    patterns = [
+        (r"подготовител\w*\s+пищ", "Подготовитель пищевого сырья"),
+        (r"оператор\s+блинного", "Оператор блинного аппарата"),
+        (r"оператор\s+в\s+соусн", "Оператор в соусный цех"),
+        (r"приготовление\s+фарша", "Приготовление фарша"),
+        (r"транспортировщик", "Транспортировщик"),
+        (r"\bупаковк\w*\b", "Упаковщик"),
+    ]
+    for pattern, position in patterns:
+        if re.search(pattern, lowered):
+            return position
+    return None
+
+
 def parse_need_line(line, current_position):
     items = []
     line = remove_age_limits(line)
@@ -283,7 +308,7 @@ def parse_need_line(line, current_position):
         return position_quantity_items
 
     gender_match = re.search(
-        r"\b(муж(?:ской|ские|ских|чины|чина)?|жен(?:ский|ские|ских|щины|щина)?|сем(?:ейная|ейные|ейный)?|семейные?)(?![а-яё])",
+        r"\b(муж(?:ской|ские|ских|чины|чина)?|жен(?:ский|ские|ских|щины|щина)?|мужчины|мужчина|женщины|женщина|сем(?:ейная|ейные|ейный)?|семейные?)(?![а-яё])",
         lowered,
     )
     if gender_match:
