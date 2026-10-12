@@ -791,6 +791,18 @@ def looks_like_pay_discussion(text):
         r"\b(?:потребност\w*|заявк\w*|нужны|нужен|нужна|нужно|требуются)\b",
         lowered,
     )
+    rate_change = re.search(
+        r"\b(?:индексир\w*|индексаци\w*|повыша\w*|повышени\w*|"
+        r"меня\w*|изменени\w*|корректир\w*|корректировк\w*|новые)"
+        r"[^\n.!?]{0,60}\bстав(?:к\w*|ок)\b",
+        lowered,
+    )
+    pay_units = re.search(
+        r"(?:руб\w*\.?|₽|\bр\.)\s*(?:/\s*|за\s*)(?:час\w*|смен\w*)",
+        lowered,
+    )
+    if rate_change and pay_units and not explicit_need:
+        return True
     return without_pay != lowered and not re.search(r"\d", without_pay) and not explicit_need
 
 

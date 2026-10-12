@@ -248,6 +248,22 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_need_with_pay_is_preserved(self):
         self.assertTrue(looks_like_need("Нужны 5 женщин на вахту за 3500"))
 
+    def test_rate_indexation_with_dates_and_shift_lengths_is_not_need(self):
+        message = (
+            'С 16.10.2026 на проекте "Белгранкорм"\n'
+            'Индексируем ставки, без изменения мотивационной логики.\n'
+            'Разнорабочий: 360 руб./час - 3600 руб./смена (10 часов)\n'
+            'Вахта от 75 смен и более 400 руб./час - 4000 руб.за смену\n'
+            'Разнорабочий в убойный цех: 360 руб./час - 3960 руб. за смену (11 часов)\n'
+            'Вахта от 75 смен и более 400 руб./час - 4400 руб.за смену\n'
+            'Прошу принять в работу и внести изменения во все ресурсы компании.'
+        )
+        self.assertFalse(looks_like_need(message))
+
+    def test_rate_change_with_actual_need_is_preserved(self):
+        message = "Повышаем ставки до 400 руб./час. Нужны 5 разнорабочих."
+        self.assertTrue(looks_like_need(message))
+
     def test_explicit_need_with_housing_history_is_not_hidden(self):
         message = "Нужны 4 женщины и 4 мужчины. Ранее сотрудники жили без жалоб."
         self.assertFalse(looks_like_housing_history(message))
