@@ -668,6 +668,25 @@ def looks_like_medical_exam_notice(text):
 def looks_like_candidate_coordination(text):
     """Широкий фильтр согласования и логистики уже найденных кандидатов."""
     lowered = text.lower()
+    # Ссылка на ранее указанную нулевую потребность не является новой заявкой.
+    references_closed_need = re.search(
+        r"\b(?:указал\w*|написал\w*|поставил\w*|стоит)\s+потребност\w*\s*[:=\-]?\s*0\b",
+        lowered,
+    )
+    has_directed_people = re.search(
+        r"\b(?:направлен\w*|отправлен\w*|в\s+пути|с\s+\w*\s*билетами)\b",
+        lowered,
+    )
+    asks_about_acceptance = re.search(
+        r"\b(?:принять|прим\w*|перенаправ\w*)\b", lowered,
+    )
+    has_new_request = re.search(
+        r"\b(?:нужны|нужен|нужна|нужно|требуются|добавить|добавляем)\b",
+        lowered,
+    )
+    if (references_closed_need and has_directed_people and asks_about_acceptance
+            and "?" in lowered and not has_new_request):
+        return True
     explicit_new_need = bool(
         re.search(
             r"\b(?:\u043d\u0443\u0436\w*|\u0442\u0440\u0435\u0431\u0443\u044e\u0442\u0441\u044f)"

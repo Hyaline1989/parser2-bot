@@ -248,6 +248,21 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_need_with_pay_is_preserved(self):
         self.assertTrue(looks_like_need("Нужны 5 женщин на вахту за 3500"))
 
+    def test_directed_people_question_with_closed_need_is_not_a_request(self):
+        message = (
+            "Доброе утро,есть 3 направленных на сегодня. "
+            "1 жен с нашими билетами уже в пути. Указали потребность 0- "
+            "всех смогут принять или перенаправлять?"
+        )
+        self.assertFalse(looks_like_need(message))
+
+    def test_new_need_after_closed_need_is_preserved(self):
+        message = (
+            "Указали потребность 0. Уже направлены кандидаты. "
+            "Нужны 2 женщины, сможете принять?"
+        )
+        self.assertTrue(looks_like_need(message))
+
     def test_rate_indexation_with_dates_and_shift_lengths_is_not_need(self):
         message = (
             'С 16.10.2026 на проекте "Белгранкорм"\n'
