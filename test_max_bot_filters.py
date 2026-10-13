@@ -279,6 +279,22 @@ class MaxBotFilterTests(unittest.TestCase):
         message = "Повышаем ставки до 400 руб./час. Нужны 5 разнорабочих."
         self.assertTrue(looks_like_need(message))
 
+    def test_tariff_change_and_box_norms_are_not_need(self):
+        message = (
+            "Коллеги, всем доброго утра! Мираторг Хоругвино\n"
+            "С 16.10.2026 меняется тариф для исполнителей.\n"
+            "Грузчики 4000 смена(363р/ч)\n"
+            "Комплектация до 500 коробов- 5000 смена (454,54 р/ч)\n"
+            "Комплектация 500+ коробов 5500 смена(500р/ч)\n"
+            "Прошу принять в работу и внести изменения во все ресурсы компании."
+        )
+        self.assertFalse(looks_like_need(message))
+
+    def test_tariff_notice_with_new_staff_request_is_preserved(self):
+        self.assertTrue(looks_like_need(
+            "Меняется тариф: 4000 смена. Нужны 3 грузчика."
+        ))
+
     def test_explicit_need_with_housing_history_is_not_hidden(self):
         message = "Нужны 4 женщины и 4 мужчины. Ранее сотрудники жили без жалоб."
         self.assertFalse(looks_like_housing_history(message))
