@@ -5,6 +5,19 @@ from parser import ALL_POSITIONS, is_zero_requirement, parse_message
 
 
 class ZeroRequirementTests(unittest.TestCase):
+    def test_absent_need_creates_agama_clear_draft(self):
+        from max_bot import looks_like_need
+
+        message = "Потребность отсутствует"
+        self.assertTrue(looks_like_need(message))
+        drafts = parse_message({"object": "Агама Лешково", "text": message})
+        self.assertEqual(len(drafts), 1)
+        self.assertEqual(drafts[0]["object"], "Агама Лешково")
+        self.assertEqual(drafts[0]["operation"], "обнулить")
+        self.assertEqual(drafts[0]["position"], ALL_POSITIONS)
+        self.assertFalse(is_zero_requirement("Потребность отсутствует?"))
+        self.assertFalse(is_zero_requirement("Потребность отсутствует у мужчин, нужны 3 женщины"))
+
     def test_explicit_zero_creates_clear_object_row(self):
         drafts = parse_message(
             {
