@@ -283,8 +283,20 @@ def looks_like_operational_discussion(text):
             )
         )
     )
+    is_employee_problem_review = (
+        bool(re.search(r"\b(?:человек\w*|сотрудник\w*|работник\w*)\b", lowered))
+        and bool(re.search(
+            r"\b(?:не\s+разобрано|неразобрано|не\s+справля\w*|не\s+устраива\w*)\b",
+            lowered,
+        ))
+        and bool(re.search(
+            r"\b(?:за\s+недел\w*|понять|разобраться|в\s+чем\s+дело|почему)\b",
+            lowered,
+        ))
+    )
     return (
-        (any(marker in lowered for marker in discussion_markers) or is_estimated_delivery)
+        (any(marker in lowered for marker in discussion_markers)
+         or is_estimated_delivery or is_employee_problem_review)
         and not any(marker in lowered for marker in direct_need_markers)
     )
 
