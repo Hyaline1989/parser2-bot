@@ -529,6 +529,8 @@ def looks_like_passport_correction(text):
 def looks_like_candidate_review_question(text):
     """Отсекает вопросы о возможности принять конкретного кандидата."""
     lowered = text.lower()
+    if re.search(r"\b(?:нужна|нужен)\b", lowered):
+        return False
     candidate_markers = [
         "\u0436\u0435\u043d\u0449\u0438\u043d\u0430",
         "\u0436\u0435\u043d\u0449\u0438\u043d",
@@ -741,8 +743,14 @@ def looks_like_candidate_coordination(text):
             lowered,
         )
     )
+    acceptance_request = bool(re.search(
+        r"\b(?:можем|можно|сможем|сможете|можете)\b[^.!?\n]{0,80}"
+        r"\b(?:принять|направить|отправить|рассмотреть)\b"
+        r"|\b(?:очень\s+)?хочет\s+(?:на|к\s+вам)\b",
+        lowered,
+    ))
     return has_candidate and (
-        (has_coordination and ("?" in lowered or has_logistics_or_profile))
+        (has_coordination and ("?" in lowered or has_logistics_or_profile or acceptance_request))
         or (already_in_process and has_logistics_or_profile)
     )
 

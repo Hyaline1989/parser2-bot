@@ -248,6 +248,18 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_need_with_pay_is_preserved(self):
         self.assertTrue(looks_like_need("Нужны 5 женщин на вахту за 3500"))
 
+    def test_candidate_acceptance_without_question_mark_is_not_need(self):
+        for message in (
+            "Сергей Ëлчин можем 1 ж принять\nОчень хочет на мясокомбинат",
+            "Можем 1 ж принять",
+            "Можно направить 2 мужчин",
+        ):
+            with self.subTest(message=message):
+                self.assertFalse(looks_like_need(message))
+
+    def test_actual_need_with_acceptance_without_question_mark_is_preserved(self):
+        self.assertTrue(looks_like_need("Нужна 1 женщина, можем принять сегодня"))
+
     def test_employee_problem_review_is_not_need(self):
         self.assertFalse(looks_like_need(
             "Просто 3 человек за неделю в не разобрано, понять в чем дело, "
