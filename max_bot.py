@@ -720,9 +720,13 @@ def looks_like_candidate_coordination(text):
             lowered,
         )
     )
+    has_candidate = has_candidate or bool(re.search(
+        r"\b(?:мальчик\w*|девочк\w*|ребят\w*|компани\w*|"
+        r"семейн\w*|\d+\s*человек\w*)\b", lowered,
+    ))
     has_coordination = bool(
         re.search(
-            r"\b(?:\u043f\u0440\u0438\u043c\w*|\u043f\u0440\u0438\u043d\w*|\u0432\u043e\u0437\u044c\u043c\w*|\u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\w*|"
+            r"\b(?:\u043f\u0440\u0438\u043c\w*|\u043f\u0440\u0438\u043d\w*|возьм\w*|\u0440\u0430\u0441\u0441\u043c\u043e\u0442\u0440\w*|"
             r"\u043d\u0430\u043f\u0440\u0430\u0432\w*|\u0441\u043e\u0433\u043b\u0430\u0441\w*|\u043e\u0442\u043f\u0440\u0430\u0432\w*)",
             lowered,
         )
