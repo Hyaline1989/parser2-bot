@@ -48,7 +48,7 @@ class LinePositionTests(unittest.TestCase):
 
         parsed = {(draft["position"], draft["gender"]): draft["quantity"] for draft in drafts}
         self.assertEqual(parsed[("Грузчик", "мужчины")], 5)
-        self.assertEqual(parsed[("Кладовщик", "мужчины")], 10)
+        self.assertEqual(parsed[("Комплектовщик", "мужчины")], 10)
 
     def test_each_line_uses_its_own_position(self):
         drafts = parse_message(
@@ -66,7 +66,7 @@ class LinePositionTests(unittest.TestCase):
         }
 
         self.assertEqual(rows[("Грузчик", "rf_rb_m")], 20)
-        self.assertEqual(rows[("Кладовщик", "rf_rb_f")], 10)
+        self.assertEqual(rows[("Комплектовщик", "rf_rb_f")], 10)
         self.assertEqual(rows[("Грузчик", "rf_rb_family")], 2)
         self.assertNotIn(("Грузчик", "rf_rb_f"), rows)
 
