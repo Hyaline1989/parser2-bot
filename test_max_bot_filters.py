@@ -248,6 +248,19 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_need_with_pay_is_preserved(self):
         self.assertTrue(looks_like_need("Нужны 5 женщин на вахту за 3500"))
 
+    def test_candidate_age_without_years_is_not_need(self):
+        for message in (
+            "Почему? Ему 54 по условиям проекта грузчики до 55",
+            "Ей 54, женщины до 55 по условиям проекта",
+        ):
+            with self.subTest(message=message):
+                self.assertFalse(looks_like_need(message))
+
+    def test_new_staff_count_with_age_discussion_is_preserved(self):
+        self.assertTrue(looks_like_need(
+            "Нужны 3 грузчика до 55 лет. Ему 54."
+        ))
+
     def test_offered_group_with_family_and_boys_is_not_need(self):
         self.assertFalse(looks_like_need(
             "Добрый вечер!\nВозьмете компанию 4 человека?\n"

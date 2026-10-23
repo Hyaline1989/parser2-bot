@@ -350,6 +350,15 @@ def looks_like_place_availability(text):
 def looks_like_age_limit_only(text):
     lowered = text.lower()
     age_pattern = r"\b(?:до|от)\s*\d{1,2}(?:\s*[-–—]\s*\d{1,2})?\s*(?:лет|года?|г\.)\b"
+    personal_age_pattern = r"\b(?:ему|ей|мне)\s+\d{2}(?!\d)\b"
+    if re.search(personal_age_pattern, lowered):
+        # В обсуждениях кандидата единица возраста часто опускается:
+        # «ему 54, грузчики до 55».
+        age_pattern = (
+            personal_age_pattern
+            + r"|\b(?:до|от)\s*\d{1,2}(?!\d)(?:\s*[-–—]\s*\d{1,2}(?!\d))?"
+            r"(?:\s*(?:лет|года?|г\.))?\b"
+        )
     if not re.search(age_pattern, lowered):
         return False
 
