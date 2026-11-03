@@ -48,6 +48,9 @@ def is_zero_requirement(text):
     ]
     for raw_line in lowered.splitlines():
         line = clean_line(raw_line)
+        short_family = re.fullmatch(r"с\s*[-:=]\s*(\d+)[.!]?", line)
+        if short_family:
+            staffing_quantities.append(int(short_family.group(1)))
         position_items = (
             parse_position_quantity_items(line)
             + parse_quantity_position_items(line)
@@ -282,6 +285,12 @@ def parse_need_line(line, current_position):
 
     if items:
         return items
+
+    # Отдельная строка «С-6» обозначает семьи, а не время «с 6».
+    short_family = re.fullmatch(r"с\s*[-:=]\s*(\d+)[.!]?", lowered.strip())
+    if short_family:
+        return [make_item(short_family.group(1), "семейные",
+                          line_position or current_position, "семейная")]
 
     # В строках вида "Семейная: 3 (кмп+кмп, кмп+грузчик)" слова в скобках
     # поясняют состав пар. Число перед первым "кмп" не является количеством
