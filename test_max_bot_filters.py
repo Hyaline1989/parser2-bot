@@ -248,6 +248,17 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_need_with_pay_is_preserved(self):
         self.assertTrue(looks_like_need("Нужны 5 женщин на вахту за 3500"))
 
+    def test_abbreviated_candidate_on_the_way_is_not_need(self):
+        for gender in ("муж", "жен"):
+            with self.subTest(gender=gender):
+                self.assertFalse(looks_like_need(
+                    f"Доброе утро,есть 1 {gender} на кмп в доезде с нашим билетом на завтра. "
+                    "Будет возможность принять или лучше переориентировать?"
+                ))
+
+    def test_explicit_need_with_abbreviated_gender_is_preserved(self):
+        self.assertTrue(looks_like_need("Нужен 1 муж на кмп, сможете принять завтра?"))
+
     def test_candidate_age_without_years_is_not_need(self):
         for message in (
             "Почему? Ему 54 по условиям проекта грузчики до 55",
