@@ -23,8 +23,9 @@ class FoodProductionTests(unittest.TestCase):
     def test_all_counts_and_tasks_are_preserved(self):
         drafts = parse_message({"object": "КуулКлевер", "text": MESSAGE})
         rows = {r["position"]: r for r in build_vector_rows(drafts)}
-        self.assertEqual(set(rows), {"Работник производства", "Упаковщик"})
-        self.assertEqual(rows["Работник производства"]["cis_m"], 7)
+        self.assertEqual(set(rows), {"Работник производства", "Работник склада", "Упаковщик"})
+        self.assertEqual(rows["Работник производства"]["cis_m"], 5)
+        self.assertEqual(rows["Работник склада"]["cis_m"], 2)
         self.assertEqual(rows["Работник производства"]["cis_f"], 3)
         self.assertEqual(rows["Упаковщик"]["cis_f"], 1)
         self.assertTrue(all(d["citizenship"] == "СНГ" for d in drafts))
