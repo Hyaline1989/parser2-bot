@@ -861,9 +861,42 @@ def looks_like_pay_discussion(text):
     return without_pay != lowered and not re.search(r"\d", without_pay) and not explicit_need
 
 
+def looks_like_staff_information(text):
+    """Статистика, оценка сотрудников и согласование уже найденных людей."""
+    lowered = text.lower()
+    if re.search(
+        r"\b(?:потребност\w*|заявк\w*|нужны|нужен|нужна|нужно|требуются)\b",
+        lowered,
+    ):
+        return False
+    staffing_statistics = (
+        re.search(r"\b(?:засел[её]н\w*|заехавш\w*|направлен\w*)\b", lowered)
+        and re.search(r"\b(?:старше|моложе)\s+\d{2}\b", lowered)
+    )
+    employee_complaint = (
+        re.search(r"\b(?:жалоб\w*|груб\w*\s+ошибк\w*|руга\w*)\b", lowered)
+        and re.search(r"\b(?:на\s+не[её]|с\s+ней|е[её]\s+убрали|пробуем\s+в\s+работе)\b", lowered)
+    )
+    age_approval = (
+        re.search(r"\b(?:женщин\w*|мужчин\w*|кандидат\w*)\b", lowered)
+        and re.search(r"\b\d{2}\s+\d{2}\b", lowered)
+        and re.search(r"\b(?:попробуем|рассмотрим|примем)\b", lowered)
+    )
+    arrival = (
+        re.search(r"\b(?:к\s+вам\s+ед[еу]т|к\s+вам\s+приед\w*)\b", lowered)
+        and re.search(r"\b(?:семейн\w*\s+пар\w*|кандидат\w*|женщин\w*|мужчин\w*)\b", lowered)
+    )
+    available_place = (
+        re.search(r"\bесть\s+\d+\s+(?:женск\w*|мужск\w*)\s+мест\w*\b", lowered)
+        and re.search(r"\b(?:можем|готовы)\s+принять\b", lowered)
+    )
+    return bool(staffing_statistics or employee_complaint or age_approval or arrival or available_place)
+
+
 def looks_like_need(text):
     if (
-        looks_like_shift_report(text)
+        looks_like_staff_information(text)
+        or looks_like_shift_report(text)
         or looks_like_place_question(text)
         or looks_like_trip_details(text)
         or looks_like_arrival_notice(text)

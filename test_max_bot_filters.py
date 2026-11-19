@@ -248,6 +248,31 @@ class MaxBotFilterTests(unittest.TestCase):
     def test_real_need_with_pay_is_preserved(self):
         self.assertTrue(looks_like_need("Нужны 5 женщин на вахту за 3500"))
 
+    def test_staff_information_examples_are_not_need(self):
+        examples = (
+            "Посмотрела данные по заехавшим от меня. Из 14 заселённых только 4 старше 45 лет. "
+            "В направленных ещё 21 чел и тоже только 4 чел старше 45. Молодые все едут",
+            "Жалобы на неё от других. С таможни её убрали за грубую ошибку. "
+            "Остался 1 участок где мы её пробуем в работе. Аванс поставили на 3е лицо",
+            "52 53 женщины попробуем? Яна Чинарова",
+            "К Вам едет семейная пара Иван и Саида (79259891702), будут через час",
+            "Есть 1 женское место , можем принять",
+        )
+        for message in examples:
+            with self.subTest(message=message):
+                self.assertFalse(looks_like_need(message))
+
+    def test_explicit_need_with_staff_information_is_preserved(self):
+        for message in (
+            "Нужны 3 женщины. Из 14 заселённых только 4 старше 45 лет",
+            "Потребность 2 человека. Жалобы на неё, её убрали за грубую ошибку",
+            "Нужны 2 женщины. К вам едет семейная пара",
+            "Потребность: есть 1 женское место, можем принять",
+            "4 м", "1 женская",
+        ):
+            with self.subTest(message=message):
+                self.assertTrue(looks_like_need(message))
+
     def test_abbreviated_candidate_on_the_way_is_not_need(self):
         for gender in ("муж", "жен"):
             with self.subTest(gender=gender):
