@@ -12,7 +12,7 @@ POSITION_HINTS = sorted(POSITION_ALIASES, key=len, reverse=True)
 POSITION_GENDER_DEFAULTS = get_position_gender_defaults()
 ALL_POSITIONS = "Все должности"
 DEFAULT_CITIZENSHIP_BY_OBJECT = {
-    "Клинский мясокомбинат": "СНГ",
+    "Клинский мясокомбинат": "РФ/РБ",
     "Креветки Клинский": "СНГ",
     "КуулКлевер": "СНГ",
 }

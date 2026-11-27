@@ -48,15 +48,15 @@ class QuantityBeforeGenderTests(unittest.TestCase):
         self.assertTrue(
             all(draft["position"] == "Работник производства" for draft in drafts)
         )
-        self.assertTrue(all(draft["citizenship"] == "СНГ" for draft in drafts))
+        self.assertTrue(all(draft["citizenship"] == "РФ/РБ" for draft in drafts))
 
         rows = build_vector_rows(drafts)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["position"], "Работник производства")
-        self.assertEqual(rows[0]["cis_m"], 8)
-        self.assertEqual(rows[0]["cis_f"], 7)
-        self.assertEqual(rows[0]["rf_rb_m"], 0)
-        self.assertEqual(rows[0]["rf_rb_f"], 0)
+        self.assertEqual(rows[0]["rf_rb_m"], 8)
+        self.assertEqual(rows[0]["rf_rb_f"], 7)
+        self.assertEqual(rows[0]["cis_m"], 0)
+        self.assertEqual(rows[0]["cis_f"], 0)
 
 
 if __name__ == "__main__":
